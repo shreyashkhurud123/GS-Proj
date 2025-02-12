@@ -1,13 +1,12 @@
-from datetime import datetime
-
-from sqlalchemy import String, Enum as SQAEnum, ForeignKey, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import List, Optional
+
+from sqlalchemy import String, Enum as SQAEnum, ForeignKey, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.config import Base
 from app.models.base import TimestampMixin
-from app.models.enums.user_designation import UserDesignation
-
 from app.models.enums.status import Status
+from app.models.enums.user_designation import UserDesignation
 
 
 class User(Base, TimestampMixin):
@@ -35,13 +34,24 @@ class User(Base, TimestampMixin):
         default=Status.PENDING
     )
 
+    created_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
+
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
+
     # last_status_change: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Relations
     role: Mapped["Role"] = relationship(back_populates="users")
-    documents: Mapped[List["UserDocument"]] = relationship(back_populates="user")
+
+    documents: Mapped[List["UserDocument"]] = relationship(back_populates="users")
 
     # Storing list of OTP's for user
     # otps: Mapped[List["UserOTP"]] = relationship("UserOTP", back_populates="user")
     # For now storing OTP's for user as single entry only instead of List of OTPs
-    otps: Mapped["UserOTP"] = relationship("UserOTP", back_populates="user")
+    otps: Mapped["UserOTP"] = relationship("UserOTP", back_populates="users", uselist=False)

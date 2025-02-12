@@ -1,4 +1,4 @@
-from sqlalchemy import String, Boolean, Enum as SQAEnum, ForeignKey
+from sqlalchemy import String, Boolean, Enum as SQAEnum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.config import Base
 from app.models.base import TimestampMixin
@@ -17,6 +17,16 @@ class DocumentType(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
     is_mandatory: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    created_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
+
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
 
 
 class UserDocument(Base, TimestampMixin):
@@ -38,3 +48,13 @@ class UserDocument(Base, TimestampMixin):
     # Relationships
     user: Mapped["User"] = relationship(back_populates="documents")
     document_type: Mapped["DocumentType"] = relationship()
+
+    created_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
+
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )

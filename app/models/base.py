@@ -1,8 +1,9 @@
 from datetime import datetime, UTC
 from typing import Optional
-from sqlalchemy import ForeignKey, Integer, DateTime, Boolean
+
+from sqlalchemy import DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
-from app.config import Base
+
 
 class TimestampMixin:
     """
@@ -19,19 +20,9 @@ class TimestampMixin:
         onupdate=lambda: datetime.now(UTC)  # Timezone-aware UTC timestamp on update
     )
 
-    created_by: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey('users.id')
-    )
-
-    updated_by: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey('users.id')
-    )
-
     is_active: Mapped[bool] = mapped_column(
         Boolean,
-        ForeignKey('users.id')
+        default=True
     )
 
 

@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import String, Date, ForeignKey
+from sqlalchemy import String, Date, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 from app.config import Base
@@ -31,3 +31,13 @@ class GR(Base, TimestampMixin):
     file_path: Mapped[str] = mapped_column(String(500))
 
     yojana: Mapped["Yojana"] = relationship(back_populates="grs")
+
+    created_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
+
+    updated_by: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey('users.id')
+    )
