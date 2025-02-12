@@ -1,0 +1,6 @@
+import enum
+
+
+class UserDesignation(enum.Enum):
+    GRAM_PANCHAYAT_ADHIKARI = "GRAM_PANCHAYAT_ADHIKARI"
+    VISTAR_ADHIKARI = "VISTAR_ADHIKARI"

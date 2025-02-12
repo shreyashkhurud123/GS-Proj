@@ -51,15 +51,11 @@ class UserDocument(Base, TimestampMixin):
     user: Mapped["User"] = relationship("User", back_populates="documents")
     document_type: Mapped["DocumentType"] = relationship("DocumentType")
 
-    created_by: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey('users.id')
-    )
+    created_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'))
+    updated_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'))
 
-    updated_by: Mapped[Optional[int]] = mapped_column(
-        Integer,
-        ForeignKey('users.id')
-    )
+    user: Mapped["User"] = relationship("User", back_populates="documents",
+                                        foreign_keys=[user_id])
 
     __table_args__ = (
         # Ensure a user can only have one document per document type.

@@ -4,6 +4,7 @@ from sqlalchemy import String, Enum as SQAEnum, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import Base
+from app.models import UserDocument
 from app.models.base import TimestampMixin
 from app.models.enums.status import Status
 from app.models.enums.user_designation import UserDesignation
@@ -50,7 +51,11 @@ class User(Base, TimestampMixin):
     # Relations
     role: Mapped["Role"] = relationship("Role", back_populates="users")
 
-    documents: Mapped[List["UserDocument"]] = relationship("UserDocument", back_populates="user")
+    documents: Mapped[List["UserDocument"]] = relationship(
+        "UserDocument",
+        back_populates="user",
+        foreign_keys=lambda: [UserDocument.__table__.c.user_id]
+    )
 
     # Storing list of OTP's for user
     # otps: Mapped[List["UserOTP"]] = relationship("UserOTP", back_populates="user")

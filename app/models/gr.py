@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import String, Date, ForeignKey, Integer, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Optional
+from typing import Optional, List
 from app.config import Base
 from app.models.base import TimestampMixin
 
@@ -11,6 +11,8 @@ class Yojana(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), unique=True)
+
+    grs: Mapped[List["GR"]] = relationship("GR", back_populates="yojana")
 
     # Todo not needed
     # department: Mapped[str] = mapped_column(String(100))
@@ -41,6 +43,8 @@ class GR(Base, TimestampMixin):
         Integer,
         ForeignKey('users.id')
     )
+
+    yojana: Mapped["Yojana"] = relationship("Yojana", back_populates="grs")
 
     __table_args__ = (
         Index('ix_gr_department_effective_date', 'department_name', 'effective_date'),
