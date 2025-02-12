@@ -25,9 +25,10 @@ class User(Base, TimestampMixin):
     # Todo check proper names
     designation: Mapped["UserDesignation"] = mapped_column(SQAEnum(UserDesignation))
 
-    district_id: Mapped[Optional[int]] = mapped_column(ForeignKey('districts.id'))
-    block_id: Mapped[Optional[int]] = mapped_column(ForeignKey('blocks.id'))
-    gram_panchayat_id: Mapped[Optional[int]] = mapped_column(ForeignKey('gram_panchayats.id'))
+    # Add indexes to foreign key columns if frequently queried
+    district_id: Mapped[Optional[int]] = mapped_column(ForeignKey('districts.id'), index=True)
+    block_id: Mapped[Optional[int]] = mapped_column(ForeignKey('blocks.id'), index=True)
+    gram_panchayat_id: Mapped[Optional[int]] = mapped_column(ForeignKey('gram_panchayats.id'), index=True)
 
     status: Mapped[Status] = mapped_column(
         SQAEnum(Status),
@@ -47,11 +48,11 @@ class User(Base, TimestampMixin):
     # last_status_change: Mapped[Optional[datetime]] = mapped_column(DateTime)
 
     # Relations
-    role: Mapped["Role"] = relationship(back_populates="users")
+    role: Mapped["Role"] = relationship("Role", back_populates="users")
 
-    documents: Mapped[List["UserDocument"]] = relationship(back_populates="users")
+    documents: Mapped[List["UserDocument"]] = relationship("UserDocument", back_populates="user")
 
     # Storing list of OTP's for user
     # otps: Mapped[List["UserOTP"]] = relationship("UserOTP", back_populates="user")
     # For now storing OTP's for user as single entry only instead of List of OTPs
-    otps: Mapped["UserOTP"] = relationship("UserOTP", back_populates="users", uselist=False)
+    otp: Mapped["UserOTP"] = relationship("UserOTP", back_populates="user", uselist=False)

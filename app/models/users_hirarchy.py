@@ -1,6 +1,5 @@
-from typing import List, Optional
-
-from sqlalchemy import String, ForeignKey, Integer
+from typing import List
+from sqlalchemy import String, ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import Base
@@ -11,26 +10,32 @@ class District(Base, TimestampMixin):
     __tablename__ = 'districts'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True)
-    blocks: Mapped[List["Block"]] = relationship(back_populates="district")
-
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    blocks: Mapped[List["Block"]] = relationship("Block", back_populates="district")
 
 class Block(Base, TimestampMixin):
     __tablename__ = 'blocks'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    district_id: Mapped[int] = mapped_column(ForeignKey('districts.id'))
+    name: Mapped[str] = mapped_column(String(100), index=True)
+    district_id: Mapped[int] = mapped_column(ForeignKey('districts.id'), index=True)
 
-    district: Mapped["District"] = relationship(back_populates="blocks")
-    gram_panchayats: Mapped[List["GramPanchayat"]] = relationship(back_populates="block")
+    district: Mapped["District"] = relationship("District", back_populates="blocks")
+    gram_panchayats: Mapped[List["GramPanchayat"]] = relationship("GramPanchayat", back_populates="block")
 
+    __table_args__ = (
+        Index('ix_block_district_name', 'district_id', 'name'),
+    )
 
 class GramPanchayat(Base, TimestampMixin):
     __tablename__ = 'gram_panchayats'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100))
-    block_id: Mapped[int] = mapped_column(ForeignKey('blocks.id'))
+    name: Mapped[str] = mapped_column(String(100), index=True)
+    block_id: Mapped[int] = mapped_column(ForeignKey('blocks.id'), index=True)
 
-    block: Mapped["Block"] = relationship(back_populates="gram_panchayats")
+    block: Mapped["Block"] = relationship("Block", back_populates="gram_panchayats")
+
+    __table_args__ = (
+        Index('ix_gram_panchayat_block_name', 'block_id', 'name'),
+    )

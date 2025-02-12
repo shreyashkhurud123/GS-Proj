@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import String, Date, ForeignKey, Integer
+from sqlalchemy import String, Date, ForeignKey, Integer, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional
 from app.config import Base
@@ -25,12 +25,12 @@ class GR(Base, TimestampMixin):
     gr_code: Mapped[Optional[str]] = mapped_column(String(50), unique=True)
 
     # Todo table for department and fk id from dept table
-    department_name: Mapped[str] = mapped_column(String(100))
-    effective_date: Mapped[date] = mapped_column(Date)
+    department_name: Mapped[str] = mapped_column(String(100),index=True)
+    effective_date: Mapped[date] = mapped_column(Date,index=True)
     yojana_id: Mapped[int] = mapped_column(ForeignKey('yojanas.id'))
     file_path: Mapped[str] = mapped_column(String(500))
 
-    yojana: Mapped["Yojana"] = relationship(back_populates="grs")
+    yojana: Mapped["Yojana"] = relationship("Yojana", back_populates="grs")
 
     created_by: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -40,4 +40,8 @@ class GR(Base, TimestampMixin):
     updated_by: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey('users.id')
+    )
+
+    __table_args__ = (
+        Index('ix_gr_department_effective_date', 'department_name', 'effective_date'),
     )

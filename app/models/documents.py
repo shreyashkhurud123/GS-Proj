@@ -1,8 +1,9 @@
-from sqlalchemy import String, Boolean, Enum as SQAEnum, ForeignKey, Integer
+from typing import Optional
+from sqlalchemy import String, Boolean, Enum as SQAEnum, ForeignKey, Integer, UniqueConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.config import Base
 from app.models.base import TimestampMixin
-from typing import List, Optional
 from app.models.enums.status import Status
 
 
@@ -46,8 +47,9 @@ class UserDocument(Base, TimestampMixin):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship(back_populates="documents")
-    document_type: Mapped["DocumentType"] = relationship()
+    # user: Mapped["User"] = relationship(back_populates="documents")
+    user: Mapped["User"] = relationship("User", back_populates="documents")
+    document_type: Mapped["DocumentType"] = relationship("DocumentType")
 
     created_by: Mapped[Optional[int]] = mapped_column(
         Integer,
@@ -57,4 +59,11 @@ class UserDocument(Base, TimestampMixin):
     updated_by: Mapped[Optional[int]] = mapped_column(
         Integer,
         ForeignKey('users.id')
+    )
+
+    __table_args__ = (
+        # Ensure a user can only have one document per document type.
+        # todo check whether we need unique constraint
+        UniqueConstraint('user_id', 'document_type_id', name='uq_user_document'),
+        Index('ix_user_documents_verification_status', 'verification_status'),
     )
