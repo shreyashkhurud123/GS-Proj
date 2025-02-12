@@ -29,6 +29,8 @@ class AuthService:
             Sending OTP for logging in
         """
 
+        print("In Service Layer")
+
         user = UserDal.get_user_by_mobile(mobile_number=ph_no, db=db)
 
         if not user:
@@ -37,12 +39,16 @@ class AuthService:
         # Generate a 6-digit OTP
         otp = ''.join(random.choices(string.digits, k=6))
 
+        print("OTP generated: ", otp)
+
         try:
             message_sid = None
 
             # Send OTP via Twilio
             if user.mobile_number == ph_no:
-                message_sid = send_sms(ph_no, otp)
+                pass
+                # message_sid = send_sms(ph_no, otp)
+                message_sid = "test123"
 
             # Todo check whether we need to send OTP to whatsapp number also?
             # integrate whatsapp OTP also
