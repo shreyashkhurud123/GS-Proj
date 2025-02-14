@@ -1,6 +1,16 @@
-from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request, HTTPException
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
-from fastapi import Request
+
+from app.core.core_exception import UnauthorizedException
+from app.models.enums.vx_api_perms_enum import VxAPIPermsEnum
+from app.utils.jwt_utils import VxJWTUtils
+from app.utils.vx_api_perms_utils import VxAPIPermsUtils
+
+# Explicitly adding these two below paths to public
+VxAPIPermsUtils.set_perm_get(path='/', perm=VxAPIPermsEnum.PUBLIC)
+VxAPIPermsUtils.set_perm_get(path="/docs", perm=VxAPIPermsEnum.PUBLIC)
+VxAPIPermsUtils.set_perm_get(path="/openapi.json", perm=VxAPIPermsEnum.PUBLIC)
 
 
 class ApiChecksMW(BaseHTTPMiddleware):
@@ -21,14 +31,24 @@ class ApiChecksMW(BaseHTTPMiddleware):
             if not auth_header or not auth_header.startswith("Bearer"):
                 raise ValueError("Invalid Auth Header")
 
+            # Getting the part after Bearer
+            token = auth_header.split(" ")[1]
+
+            payload = VxJWTUtils.verify_access_token(token=token)
+
+            # Getting subject. Normally its User_id
+            sub = int(payload.get("user_id"))
+
+            if not sub:
+                raise UnauthorizedException("Token is missing Subject claims. i.e user_id")
+
+        # Todo handle appr errors
         except ValueError as e:
-            raise
+            raise ValueError(str(e))
+        except UnauthorizedException:
+            raise Exception("Authorization failed")
 
-
-
-        pass
-
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) :
         """
             This is an overridden method to define a custom logic to process incoming requests.
             i.e Middleware
@@ -36,6 +56,31 @@ class ApiChecksMW(BaseHTTPMiddleware):
         method = request.method
         path = request.url.path
 
+        print("In Middleware: ", method, path)
+
+        # todo check below and use
+        # if request.method == "OPTIONS":
+        #     return await call_next(request)
+
+        try:
+            if VxAPIPermsUtils.is_api_public(method=method, path=path):
+                return await call_next(request)
+
+            auth_header = request.headers.get("Authorization")
+
+            if auth_header and not auth_header.startswith("Bearer "):
+                raise UnauthorizedException("Invalid Token")
+
+            # Validating JWT and getting user_id
+            user_id = await ApiChecksMW.__read_jwt(request)
+
+            response = await call_next(request)
+            return response
 
 
-        pass
+        except UnauthorizedException:
+            return HTTPException(401, "UnAuthorized Exception")
+
+        # finally:
+        #     db.close()
+

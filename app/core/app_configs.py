@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.routers import file_search_poc
 from app.routers.auth import auth_v1
+from app.core.api_checks_mw import ApiChecksMW
 
 
 # todo check whether we need API Support
@@ -27,5 +28,7 @@ def create_app() -> FastAPI:
 
     # app.include_router(file_search_poc.router)
     app.include_router(auth_v1.router)
+
+    app.add_middleware(ApiChecksMW)
 
     return app

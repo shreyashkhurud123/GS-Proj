@@ -2,8 +2,18 @@ from copy import deepcopy
 from datetime import timedelta, datetime, timezone
 
 import jwt
+from jwt import ExpiredSignatureError
 
 from app.config import settings
+from app.core.core_exception import UnauthorizedException
+
+# JWT secret key and algorithm
+JWT_SECRET = settings.jwt_secret_key
+JWT_ALGO = settings.jwt_algorithm
+
+
+class JWTError:
+    pass
 
 
 class VxJWTUtils:
@@ -26,7 +36,22 @@ class VxJWTUtils:
 
         to_encode.update({"exipry": expiry_in.isoformat()})
 
-        encoded_jwt = jwt.encode(payload=to_encode, key=settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+        encoded_jwt = jwt.encode(payload=to_encode, key=JWT_SECRET, algorithm=JWT_ALGO)
 
         return encoded_jwt
 
+    @staticmethod
+    async def verify_access_token(token: str) -> dict:
+        """
+            Verifying JWT token and returning payload
+        """
+
+        try:
+            payload = jwt.decode(jwt=token, key=JWT_SECRET, algorithms=JWT_ALGO)
+            return payload
+
+        except ExpiredSignatureError:
+            raise UnauthorizedException("JWT Token has expired")
+
+        except JWTError:
+            raise UnauthorizedException("Invalid or Malformed token")
