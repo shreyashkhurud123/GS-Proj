@@ -1,5 +1,9 @@
+from typing import Optional
+
 from pydantic import field_validator
 from app.schemas.base import CamelModel
+from pydantic import EmailStr, Field
+
 
 
 class SendOtpRequestSchema(CamelModel):
@@ -27,6 +31,23 @@ class SendOtpRequestSchema(CamelModel):
 
 class LoginRequestSchema(SendOtpRequestSchema):
     otp: str
+
+
+class UserRegisterRequest(CamelModel):
+    first_name: str
+    last_name: str
+    designation_id: int
+    zilla_parishad_id: int
+    panchayat_samiti_id: int
+    mobile_number: str
+    whatsapp_number: str
+    # Todo check whether to keep optional
+    email: Optional[EmailStr] = None
+
+
+class MessageResponse(CamelModel):
+    message: str
+
 
 
 # from pydantic import BaseModel, field_validator, Field
