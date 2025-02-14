@@ -19,12 +19,17 @@ async def login(user: SendOtpRequestSchema, db: Session = Depends(get_db)):
 
     AuthService.send_otp(ph_no=user.mobile_number, db=db)
 
+    return {"Message: ": "OTP generated successfully"}
+
 
 @router.post(path="/login", summary="Login a user",
              description="Authentication of a user. Returns a JWT Token")
-async def login(login_info: LoginRequestSchema,
-                # db: Session = Depends(get_db)
-                ):
+async def login(login_info: LoginRequestSchema,  db: Session = Depends(get_db) ):
 
-    return login_info
-    pass
+    logged_in_data = AuthService.verify_otp(mobile_number=login_info.mobile_number,
+                           otp=login_info.otp,
+                           db=db)
+
+    return {"Message: ": "Logged in Successfully",
+            "data": logged_in_data
+            }

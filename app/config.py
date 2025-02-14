@@ -13,11 +13,24 @@ class Settings(BaseSettings):
     '''
         Settings class to set the environment variables
     '''
+
+    # Database Details
     database_url: str
-    otp_expiry_time: int = 5
+
+    # Twilio details
     twilio_account_sid: str
     twilio_auth_token: str
     twilio_phone_number: str
+
+    # AUTH - JWT and Access Token
+    access_token_expiry: int
+    refresh_token_expiry: int
+
+    jwt_secret_key: str
+    jwt_algorithm: str
+
+    # Common Utils vars
+    otp_expiry_time: int = 5
 
     # UPLOAD_FOLDER: str = "uploads/"
     # ALLOWED_EXTENSIONS: set = {"pdf", "jpg", "jpeg", "png"}

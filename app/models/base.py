@@ -24,5 +24,3 @@ class TimestampMixin:
         Boolean,
         default=True
     )
-
-

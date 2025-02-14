@@ -15,8 +15,13 @@ class SendOtpRequestSchema(CamelModel):
             This will validate whether the number starts with + or it has only numbers
             todo check req.
         """
-        if not value.startswith('+') and not value.isdigit():
+
+        if not value.startswith('+91'):
             raise ValueError("Phone number must start with '+' and contain only digits")
+
+        if not value[1:].isdigit():
+            raise ValueError("Phone number must start with '+' and contain only digits")
+
         return value
 
 

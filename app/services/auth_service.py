@@ -4,7 +4,11 @@ import string
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from twilio.rest import Client
+
+from app.config import settings
+from app.services.dal.auth_dal import AuthDal
 from app.services.dal.user_dal import UserDal
+from app.utils.jwt_utils import VxJWTUtils
 from app.utils.twilio_utils import send_sms
 
 
@@ -59,6 +63,24 @@ class AuthService:
             raise HTTPException(status_code=500, detail="Twilio Exception")
 
         # Store OTP in the database (optional, for verification later)
-        UserDal.store_otp(db, ph_no, otp, message_sid)
+        AuthDal.store_otp(db, ph_no, otp, message_sid)
 
         return {"message": "OTP sent successfully", "message_id": message_sid}
+
+    @staticmethod
+    def verify_otp(mobile_number: str, otp: str, db: Session):
+
+        user = UserDal.get_user_by_mobile(db=db, mobile_number=mobile_number)
+
+        if not AuthDal.verify_user_otp(db=db, user_id=user.id, otp=otp):
+            raise HTTPException(400, "Invalid or Expired OTP provided")
+
+        access_token = VxJWTUtils.create_access_token(
+            data={
+                "user_id": user.id,
+                "login": True
+            },
+            expiry_delta=settings.access_token_expiry
+        )
+
+        return access_token
