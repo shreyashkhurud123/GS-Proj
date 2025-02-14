@@ -14,6 +14,8 @@ class UserOTP(Base):
     # ensures one OTP per user
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     otp: Mapped[str] = mapped_column(String(6), nullable=False)
+
+    # For now storing UTC datetime for OTP expiry time
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     message_sid: Mapped[str] = mapped_column(String(50), nullable=True)
 
