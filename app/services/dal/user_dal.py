@@ -3,6 +3,8 @@ from typing import Optional
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
 
+from app.models.enums.approval_status import ApprovalStatus
+from app.models.enums.user_designation import UserDesignation
 from app.models.users import User
 from app.services.dal.dto.user_dto import UserDTO
 
@@ -39,3 +41,28 @@ class UserDal:
             return UserDTO.to_dto(user)
 
         return None
+
+    @staticmethod
+    def create_user(db: Session, first_name: str, last_name: str, email: str,
+                    mobile_number: str, whatsapp_number: str,
+                    gram_panchayat_id: int,
+                    designation: UserDesignation, district_id: int, block_id: int,
+                    status: ApprovalStatus, role_id: Optional[int] = 1):
+
+        new_user = User(
+            first_name=first_name,
+            last_name=last_name,
+            email=email,
+            mobile_number=mobile_number,
+            whatsapp_number=whatsapp_number,
+            designation=designation,
+            district_id=district_id,
+            block_id=block_id,
+            gram_panchayat_id=gram_panchayat_id,
+            status=status,
+            role_id=role_id
+
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)

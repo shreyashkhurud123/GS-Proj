@@ -13,21 +13,19 @@ router = APIRouter(
     responses={404: {"description": "Not Found"}}
 )
 
+
 # This is how we are explicitly setting up the permissions for routers
 VxAPIPermsUtils.set_perm_post(path=router.prefix + '/send-otp', perm=VxAPIPermsEnum.PUBLIC)
-
-
 @router.post(path="/send-otp", summary="Login a user",
              description="Authentication of a user. Returns a JWT Token")
 async def login(user: SendOtpRequestSchema, db: Session = Depends(get_db)):
     AuthService.send_otp(ph_no=user.mobile_number, db=db)
 
-    return {"Message: ": "OTP generated successfully"}
+    # return {"Message: ": "OTP generated successfully"}
+    return MessageResponse(message="OTP generated successfully")
 
 
 VxAPIPermsUtils.set_perm_post(path=router.prefix + '/login', perm=VxAPIPermsEnum.PUBLIC)
-
-
 @router.post(path="/login", summary="Login a user",
              description="Authentication of a user. Returns a JWT Token")
 async def login(login_info: LoginRequestSchema, db: Session = Depends(get_db)):
@@ -41,8 +39,6 @@ async def login(login_info: LoginRequestSchema, db: Session = Depends(get_db)):
 
 
 VxAPIPermsUtils.set_perm_post(path=router.prefix + '/register', perm=VxAPIPermsEnum.PUBLIC)
-
-
 @router.post("/register", response_model=MessageResponse, description="Registering Gram Sevak User ")
 def register_user(user_data: UserRegisterRequest, db: Session = Depends(get_db)):
 

@@ -7,16 +7,23 @@ from app.models.base import TimestampMixin
 
 
 class District(Base, TimestampMixin):
+    """
+            District -> Zilla Parishad
+    """
+
     __tablename__ = 'districts'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     blocks: Mapped[List["Block"]] = relationship("Block", back_populates="district")
 
 class Block(Base, TimestampMixin):
+    """
+        Block -> Panchayat Samiti
+    """
     __tablename__ = 'blocks'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), index=True)
     district_id: Mapped[int] = mapped_column(ForeignKey('districts.id'), index=True)
 
@@ -30,7 +37,7 @@ class Block(Base, TimestampMixin):
 class GramPanchayat(Base, TimestampMixin):
     __tablename__ = 'gram_panchayats'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), index=True)
     block_id: Mapped[int] = mapped_column(ForeignKey('blocks.id'), index=True)
 

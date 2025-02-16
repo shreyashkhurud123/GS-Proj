@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.config import Base
 from app.models import UserDocument
 from app.models.base import TimestampMixin
-from app.models.enums.status import Status
+from app.models.enums.approval_status import ApprovalStatus
 from app.models.enums.user_designation import UserDesignation
 
 
@@ -14,7 +14,7 @@ class User(Base, TimestampMixin):
     __tablename__ = 'users'
 
     # Todo check what all cols to make mandatory
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(String(100))
     last_name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(255), unique=True)
@@ -31,9 +31,9 @@ class User(Base, TimestampMixin):
     block_id: Mapped[Optional[int]] = mapped_column(ForeignKey('blocks.id'), index=True)
     gram_panchayat_id: Mapped[Optional[int]] = mapped_column(ForeignKey('gram_panchayats.id'), index=True)
 
-    status: Mapped[Status] = mapped_column(
-        SQAEnum(Status),
-        default=Status.PENDING
+    status: Mapped[ApprovalStatus] = mapped_column(
+        SQAEnum(ApprovalStatus),
+        default=ApprovalStatus.PENDING
     )
 
     created_by: Mapped[Optional[int]] = mapped_column(

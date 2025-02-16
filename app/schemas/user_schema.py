@@ -1,9 +1,10 @@
 from typing import Optional
 
 from pydantic import field_validator
+
+from app.models.enums.user_designation import UserDesignation
 from app.schemas.base import CamelModel
 from pydantic import EmailStr, Field
-
 
 
 class SendOtpRequestSchema(CamelModel):
@@ -21,7 +22,7 @@ class SendOtpRequestSchema(CamelModel):
         """
 
         if not value.startswith('+91'):
-            raise ValueError("Phone number must start with '+' and contain only digits")
+            raise ValueError("Phone number must start with '+91' and contain only digits")
 
         if not value[1:].isdigit():
             raise ValueError("Phone number must start with '+' and contain only digits")
@@ -30,25 +31,38 @@ class SendOtpRequestSchema(CamelModel):
 
 
 class LoginRequestSchema(SendOtpRequestSchema):
+    """ Login Schema """
     otp: str
 
 
-class UserRegisterRequest(CamelModel):
+class UserRegisterRequest(SendOtpRequestSchema):
+    """
+        Register User details
+    """
     first_name: str
     last_name: str
-    designation_id: int
+    # Todo check this
+    # designation_id: int
+    designation: UserDesignation
+
+    # District
     zilla_parishad_id: int
+
+    # Block
     panchayat_samiti_id: int
-    mobile_number: str
+
+    # gram_panchayats
+    gram_panchayat_id: int
+
+    # mobile_number: str
     whatsapp_number: str
-    # Todo check whether to keep optional
-    email: Optional[EmailStr] = None
+
+    # As discussed with Avdhoot keep email compulsory
+    email: EmailStr
 
 
 class MessageResponse(CamelModel):
     message: str
-
-
 
 # from pydantic import BaseModel, field_validator, Field
 # from typing import Optional, List

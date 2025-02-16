@@ -13,7 +13,7 @@ class Book(Base, TimestampMixin):
 
     __tablename__ = 'books'
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
     title: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
 
     # Todo table for department and fk id from dept table

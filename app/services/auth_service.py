@@ -6,12 +6,13 @@ from sqlalchemy.orm import Session
 from twilio.rest import Client
 
 from app.config import settings
-from app.models.enums.user_designation import UserDesignation
+from app.core.core_exceptions import InvalidRequestException, NotFoundException
+from app.models.enums.approval_status import ApprovalStatus
 from app.schemas.user_schema import UserRegisterRequest
 from app.services.dal.auth_dal import AuthDal
 from app.services.dal.user_dal import UserDal
+from app.services.dal.user_hierarchy_dal import GramPanchayatDal, BlockDal, DistrictDal
 from app.utils.jwt_utils import VxJWTUtils
-from app.utils.twilio_utils import send_sms
 
 
 def send_otp_twilio(phone_number: str, otp: str):
@@ -96,23 +97,39 @@ class AuthService:
                 detail=f"User with phone number {user_data.mobile_number} Already exists"
             )
 
-        # TOdo add other validations
+        district = DistrictDal.get_district_by_id(db=db, district_id=user_data.zilla_parishad_id)
+        if not district:
+            raise NotFoundException(f"District with district id {user_data.zilla_parishad_id} Not Found")
 
-        # # Prepare user data for creation. Map payload keys to your model’s columns.
-        # user_data = {
-        #     "first_name": user_data.firstName,
-        #     "last_name": user_data.lastName,
-        #     "email": user_data.email,
-        #     "mobile_number": user_data.mobile_number,
-        #     "whatsapp_number": user_data.whatsAppMobileNumber,
-        #     # For this example, we assume role_id is determined by designation.
-        #     # You may adjust this logic as per your business rules.
-        #     "role_id": 2,  # For instance, District_Admin role (id 2) by default.
-        #     "designation": designation,
-        #     "district_id": user_data.zillaParishadId,
-        #     "block_id": user_data.panchayatSamitiId,
-        #     "status": "APPROVED"  # Or set a default value as needed.
-        # }
+        block = BlockDal.get_block_by_id(db=db, block_id=user_data.panchayat_samiti_id)
+        if not block:
+            raise NotFoundException(f"block with block id {user_data.panchayat_samiti_id} Not Found")
 
-        UserDal.create_user(user_data, db)
-        pass
+        # Checking if provided District ID is indeed the parent of provided block
+        if district.id != block.district_id:
+            HTTPException(403, "Provided block does not belong to the provided district")
+
+        gram_panchayat = GramPanchayatDal.get_gram_panchayat_by_id(db=db, gp_id=user_data.gram_panchayat_id)
+
+        block = BlockDal.get_block_by_id(db=db, block_id=user_data.panchayat_samiti_id)
+        if not block:
+            raise NotFoundException(f"block with block id {user_data.panchayat_samiti_id} Not Found")
+
+        # Checking if provided block is indeed parent of grampanchayat
+        if gram_panchayat.block_id != block.id:
+            HTTPException (403, "Provided gram panchayat does not belong to the provided block(Panchayat Samiti)")
+
+        UserDal.create_user(
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            email=user_data.email,
+            mobile_number=user_data.mobile_number,
+            whatsapp_number=user_data.whatsapp_number,
+            designation=user_data.designation,
+            district_id=user_data.zilla_parishad_id,
+            block_id=user_data.panchayat_samiti_id,
+            gram_panchayat_id=user_data.gram_panchayat_id,
+            # By default we are sending Approved
+            status=ApprovalStatus.APPROVED,
+            db=db
+        )

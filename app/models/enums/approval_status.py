@@ -1,7 +1,7 @@
 import enum
 
 
-class Status(enum.Enum):
+class ApprovalStatus(enum.Enum):
     """
         These statuses enums we can use for USER Approval status
         And DOCUMENT status

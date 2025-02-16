@@ -10,7 +10,7 @@ from app.config import Base
 class UserOTP(Base):
     __tablename__ = "user_otps"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     # ensures one OTP per user
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     otp: Mapped[str] = mapped_column(String(6), nullable=False)

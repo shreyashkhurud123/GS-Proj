@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import Base
 from app.models.base import TimestampMixin
-from app.models.enums.status import Status
+from app.models.enums.approval_status import ApprovalStatus
 
 
 class DocumentType(Base, TimestampMixin):
@@ -15,7 +15,7 @@ class DocumentType(Base, TimestampMixin):
 
     __tablename__ = 'document_types'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
     is_mandatory: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -32,18 +32,22 @@ class DocumentType(Base, TimestampMixin):
 
 class UserDocument(Base, TimestampMixin):
 
+    """
+        Documents specific to users
+    """
+
     __tablename__ = 'user_documents'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     document_type_id: Mapped[int] = mapped_column(ForeignKey('document_types.id'))
     file_path: Mapped[str] = mapped_column(String(500))
 
     verification_status: Mapped[str] = mapped_column(
         # Todo create seperate enums instead of using directly
-        SQAEnum(Status),
+        SQAEnum(ApprovalStatus),
         # By default documents will be verified
-        default=Status.APPROVED
+        default=ApprovalStatus.APPROVED
     )
 
     # Relationships

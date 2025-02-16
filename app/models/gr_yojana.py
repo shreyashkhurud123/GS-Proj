@@ -9,7 +9,7 @@ from app.models.base import TimestampMixin
 class Yojana(Base, TimestampMixin):
     __tablename__ = 'yojanas'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), unique=True)
 
     grs: Mapped[List["GR"]] = relationship("GR", back_populates="yojana")
@@ -22,7 +22,7 @@ class Yojana(Base, TimestampMixin):
 class GR(Base, TimestampMixin):
     __tablename__ = 'grs'
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     gr_number: Mapped[str] = mapped_column(String(50), unique=True)
     gr_code: Mapped[Optional[str]] = mapped_column(String(50), unique=True)
 
