@@ -36,6 +36,24 @@ class BlockDal:
         ).all()
         return [BlockDTO.to_dto(b) for b in blocks]
 
+    @staticmethod
+    def get_blocks_by_search_term(db: Session, search_term: str) -> List[BlockDTO]:
+
+        blocks = db.query(Block).filter(
+            Block.name.ilike(f"%{search_term}%"),
+            Block.is_active
+        ).all()
+
+        return [BlockDTO.to_dto(b) for b in blocks]
+
+    @staticmethod
+    def get_all_active_blocks(db: Session) -> List[BlockDTO]:
+        blocks = db.query(Block).filter(
+            Block.is_active
+        ).all()
+
+        return [BlockDTO.to_dto(b) for b in blocks]
+
 
 class GramPanchayatDal:
     @staticmethod

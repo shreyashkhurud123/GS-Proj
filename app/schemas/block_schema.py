@@ -1,14 +1,17 @@
 from pydantic import BaseModel
+from typing_extensions import List
+
+from app.schemas.base import CamelModel
 
 
-class BlockAdminUserSchema(BaseModel):
+class BlockAdminUserSchema(CamelModel):
     user_id: int
     user_name: str
 
 
-class BlockAdminResponseSchema(BaseModel):
-    district_id: int
-    district_name: str
+class BlockAdminResponseSchema(CamelModel):
+    block_id: int
+    block_name: str
     admin: BlockAdminUserSchema
 
     # Check below and add
@@ -18,12 +21,13 @@ class BlockAdminResponseSchema(BaseModel):
     #     }
 
 
-class BlockAdminUpdateRequest(BaseModel):
-    district_id: int
-    admin: BlockAdminUserSchema  # Reuse previous schema
+class BlockAdminUpdateRequest(CamelModel):
+    block_id: int
+    user_id: int
+    # admin: BlockAdminUserSchema
 
 
-class BlockAdminUpdateResponse(BaseModel):
+class BlockAdminUpdateResponse(CamelModel):
     success: bool
     message: str
     admin_details: BlockAdminResponseSchema

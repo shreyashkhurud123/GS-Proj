@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -21,33 +21,40 @@ router = APIRouter(
 )
 
 
-VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getdistrictadmins', perm=VxAPIPermsEnum.AUTHENTICATED)
+# VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getdistrictadmins', perm=VxAPIPermsEnum.AUTHENTICATED)
+VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getdistrictadmins', perm=VxAPIPermsEnum.PUBLIC)
 @router.get("/getdistrictadmins", response_model=List[DistrictAdminResponseSchema],
             summary="Get district admins",
             description="Returns list of districts with their admins")
 async def get_district_admins(db: Session = Depends(get_db),
-                              requesting_user: UserDTO = Depends(get_current_user)):
-    if requesting_user.role_id not in (1,):  # Only super admin
-        raise InvalidRequestException("Requesting User not authorized")
-    return DistrictService.get_district_admins(db)
+                              searcTerm=Query(default=None, description="Searching by district name")
+                              # As discussed with Avdhoot removing the validation for requesting user
+                              # requesting_user: UserDTO = Depends(get_current_user)
+                              ):
+    # if requesting_user.role_id not in (1,):  # Only super admin
+    #     raise InvalidRequestException("Requesting User not authorized")
+    return DistrictService.get_district_admins(db, search_term = searcTerm )
 
 
 # VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.ADMIN_WRITE)
-VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.AUTHENTICATED)
+# VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.AUTHENTICATED)
+VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.PUBLIC)
 @router.post("/updatedistrictadmin", response_model=DistrictAdminUpdateResponse,
              summary="Update district admin",
              description="Assign/update district admin for a specific district")
 async def update_district_admin(
         update_data: DistrictAdminUpdateRequest,
         db: Session = Depends(get_db),
-        requesting_user: UserDTO = Depends(get_current_user)
+        # As discussed with Avdhoot removing the validation for requesting user
+        # requesting_user: UserDTO = Depends(get_current_user)
 ):
-    if requesting_user.role_id not in (1,):  # Only super admin
-        raise InvalidRequestException("Requesting User not authorized")
+    # if requesting_user.role_id not in (1,):  # Only super admin
+    #     raise InvalidRequestException("Requesting User not authorized")
 
     return DistrictService.update_district_admin(
         db=db,
         district_id=update_data.district_id,
-        user_id=update_data.admin.user_id,
-        updated_by=requesting_user.id
+        user_id=update_data.user_id,
+        # updated_by=requesting_user.id
+        updated_by=1
     )

@@ -32,6 +32,7 @@ class UserDal:
     @staticmethod
     def update_user(db: Session, user_id: int, update_dict: dict) -> UserDTO:
         user = db.query(User).filter(User.id == user_id).first()
+
         if not user:
             return None
 

@@ -1,19 +1,21 @@
 from pydantic import BaseModel
 from app.schemas.block_schema import BlockAdminUserSchema  # Reuse existing
+from app.schemas.base import CamelModel
 
 
-class DistrictAdminResponseSchema(BaseModel):
+class DistrictAdminResponseSchema(CamelModel):
     district_id: int
     district_name: str
     admin: BlockAdminUserSchema
 
 
-class DistrictAdminUpdateRequest(BaseModel):
+class DistrictAdminUpdateRequest(CamelModel):
     district_id: int
-    admin: BlockAdminUserSchema
+    user_id: int
+    # admin: BlockAdminUserSchema
 
 
-class DistrictAdminUpdateResponse(BaseModel):
+class DistrictAdminUpdateResponse(CamelModel):
     success: bool
     message: str
     admin_details: DistrictAdminResponseSchema
