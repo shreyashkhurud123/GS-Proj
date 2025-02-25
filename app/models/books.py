@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, ForeignKey, Index
+from sqlalchemy import String, Integer, ForeignKey, Index, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 from typing import Optional
 from app.config import Base
@@ -19,6 +19,8 @@ class Book(Base, TimestampMixin):
     # Todo table for department and fk id from dept table
     department: Mapped[str] = mapped_column(String(100))
     file_path: Mapped[str] = mapped_column(String(500))
+
+    is_processed: Mapped[bool] = mapped_column(Boolean)
 
     created_by: Mapped[Optional[int]] = mapped_column(
         Integer,

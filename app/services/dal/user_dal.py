@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Session
@@ -7,9 +7,41 @@ from app.models.enums.approval_status import ApprovalStatus
 from app.models.enums.user_designation import UserDesignation
 from app.models.users import User
 from app.services.dal.dto.user_dto import UserDTO
+from app.services.dal.role_dal import RoleDal
 
 
 class UserDal:
+
+    @staticmethod
+    def get_user_by_id(db: Session, user_id: int) -> Optional[UserDTO]:
+        user = db.query(User).filter(
+            User.id == user_id,
+            User.is_active
+        ).first()
+        return UserDTO.to_dto(user) if user else None
+
+    @staticmethod
+    def get_users_by_role(db: Session, role_id: int) -> List[UserDTO]:
+        users = db.query(User).filter(
+            User.role_id == role_id,
+            User.is_active,
+            User.status == ApprovalStatus.APPROVED
+        ).all()
+        return [UserDTO.to_dto(user) for user in users] if users else []
+
+    @staticmethod
+    def update_user(db: Session, user_id: int, update_dict: dict) -> UserDTO:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+
+        for key, value in update_dict.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+
+        db.commit()
+        db.refresh(user)
+        return UserDTO.to_dto(user)
 
     @staticmethod
     def get_user_by_mobile(mobile_number: str, db: Session) -> Optional[UserDTO]:
@@ -66,3 +98,26 @@ class UserDal:
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
+
+    @staticmethod
+    def get_users_by_role_and_district(db: Session, role_id: int, district_id: int) -> List[UserDTO]:
+
+        print("In DAL:", role_id, district_id)
+
+        users = db.query(User).filter(
+            User.role_id == role_id,
+            User.district_id == district_id,
+            User.is_active,
+            User.status == ApprovalStatus.APPROVED
+        ).all()
+
+        return [UserDTO.to_dto(user) for user in users] if users else []
+
+    @staticmethod
+    def is_user_in_role(db: Session, user_id: int, role_name: str) -> bool:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return False
+
+        role = RoleDal.get_role_by_name(db, role_name)
+        return user.role_id == role.id if role else False

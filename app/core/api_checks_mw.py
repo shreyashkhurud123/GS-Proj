@@ -48,7 +48,7 @@ class ApiChecksMW(BaseHTTPMiddleware):
         except UnauthorizedException:
             raise Exception("Authorization failed")
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) :
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
         """
             This is an overridden method to define a custom logic to process incoming requests.
             i.e Middleware
@@ -71,8 +71,10 @@ class ApiChecksMW(BaseHTTPMiddleware):
             if auth_header and not auth_header.startswith("Bearer "):
                 raise UnauthorizedException("Invalid Token")
 
+            # Todo refactor and optimize below
             # Validating JWT and getting user_id
             user_id = await ApiChecksMW.__read_jwt(request)
+            request.state.user_id = user_id
 
             response = await call_next(request)
             return response
