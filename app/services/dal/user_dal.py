@@ -1,9 +1,9 @@
 from typing import Optional, List
 
 from sqlalchemy import or_, and_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
-from app.models.enums.approval_status import ApprovalStatus
+from app.models.enums.approval_status import ApprovalStatus, ApprovalStatusRequest
 from app.models.enums.user_designation import UserDesignation
 from app.models.users import User
 from app.services.dal.dto.user_dto import UserDTO
@@ -31,6 +31,8 @@ class UserDal:
 
     @staticmethod
     def update_user(db: Session, user_id: int, update_dict: dict) -> UserDTO:
+        print("In Dal")
+
         user = db.query(User).filter(User.id == user_id).first()
 
         if not user:
@@ -115,6 +117,19 @@ class UserDal:
         return [UserDTO.to_dto(user) for user in users] if users else []
 
     @staticmethod
+    def get_users_by_role_and_block(db: Session, role_id: int, block_id: int) -> List[UserDTO]:
+        '''
+            DAL function to get the users with role_id and block_id
+        '''
+        users = db.query(User).filter(
+            User.role_id == role_id,
+            User.block_id == block_id,
+            User.is_active,
+            User.status == ApprovalStatus.APPROVED
+        ).all()
+        return [UserDTO.to_dto(user) for user in users] if users else []
+
+    @staticmethod
     def is_user_in_role(db: Session, user_id: int, role_name: str) -> bool:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -122,3 +137,46 @@ class UserDal:
 
         role = RoleDal.get_role_by_name(db, role_name)
         return user.role_id == role.id if role else False
+
+    @staticmethod
+    def get_gramsevaks(
+            db: Session,
+            role_id: int,
+            search_term: Optional[str] = None,
+            status_filter: Optional[ApprovalStatusRequest] = ApprovalStatusRequest.ALL
+    ) -> List[UserDTO]:
+
+        query = db.query(User).filter(
+            User.role_id == role_id,
+            User.is_active
+        )
+
+        if search_term:
+            query = query.filter(
+                or_(
+                    User.first_name.ilike(f"%{search_term}%"),
+                    User.last_name.ilike(f"%{search_term}%"),
+                    User.email.ilike(f"%{search_term}%")
+                )
+            )
+
+        if status_filter == ApprovalStatus.APPROVED:
+            query = query.filter(User.status == ApprovalStatus.APPROVED)
+
+        if status_filter == ApprovalStatus.PENDING:
+            query = query.filter(User.status == ApprovalStatus.APPROVED)
+
+        if status_filter == ApprovalStatus.REJECTED:
+            query = query.filter(User.status == ApprovalStatus.APPROVED)
+
+        users = query.all()
+        return [UserDTO.to_dto(user) for user in users]
+
+    @staticmethod
+    def get_user_with_details_by_id(db: Session, user_id: int) -> Optional[UserDTO]:
+        user = db.query(User).options(
+            joinedload(User.district), joinedload(User.block),
+            joinedload(User.gram_panchayat), joinedload(User.role)) \
+            .filter(User.id == user_id, User.is_active == True).first()
+
+        return UserDTO.to_dto(user) if user else None

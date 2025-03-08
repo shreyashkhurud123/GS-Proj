@@ -9,6 +9,8 @@ from app.models.enums.approval_status import ApprovalStatus
 
 class DocumentType(Base, TimestampMixin):
 
+    # Todo write get and post(with user) endpoint for this
+
     """
         GramSevak Of pune Specific documents. Mandatory and non-mandatory
     """

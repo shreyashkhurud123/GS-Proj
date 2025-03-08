@@ -14,6 +14,7 @@ from app.schemas.district_schema import (
 from app.utils.vx_api_perms_utils import VxAPIPermsUtils, VxAPIPermsEnum
 from app.dependencies.auth import get_current_user
 
+
 router = APIRouter(
     prefix="/v1/districts",
     tags=["districts"],
@@ -33,7 +34,7 @@ async def get_district_admins(db: Session = Depends(get_db),
                               ):
     # if requesting_user.role_id not in (1,):  # Only super admin
     #     raise InvalidRequestException("Requesting User not authorized")
-    return DistrictService.get_district_admins(db, search_term = searcTerm )
+    return DistrictService.get_district_admins(db, search_term=searcTerm)
 
 
 # VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.ADMIN_WRITE)

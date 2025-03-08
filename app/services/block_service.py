@@ -9,49 +9,34 @@ from app.core.core_exceptions import NotFoundException, InvalidRequestException
 
 
 class BlockService:
-    @staticmethod
-    def get_block_admins(db: Session, search_term: Optional[str]) -> List[BlockAdminResponseSchema]:
-        """
-            Getting all the block admins which belongs to the blocks matching the provided search term
-        """
-        # Get Block Admin role first
+    def get_block_admins(db: Session, search_term: Optional[str] = None) -> List[BlockAdminResponseSchema]:
+        # Get Block Admin role
         block_admin_role = RoleDal.get_role_by_name(db, "Block_Admin")
         if not block_admin_role:
-            raise NotFoundException("Block Admin role not configured in system")
+            raise NotFoundException("Block Admin role not configured")
 
-        print("Block Admin Role: ", block_admin_role.id, block_admin_role.name)
-
-        districts = DistrictDal.get_all_districts(db)
-        result = []
-
-        print("search term: ", search_term)
-
+        # Get blocks based on search term
         if search_term:
-            block_ids = [b.id for b in BlockDal.get_blocks_by_search_term(db=db, search_term=search_term)]
+            blocks = BlockDal.get_blocks_by_search_term(db, search_term)
         else:
-            block_ids = [b.id for b in BlockDal.get_all_active_blocks(db=db)]
+            blocks = BlockDal.get_all_active_blocks(db)
 
-        print("Blocks are: ", block_ids)
-
-        for district in districts:
-            # Get users with Block Admin role in this district
-            admins = [admin for admin in UserDal.get_users_by_role_and_district(
-                db,
+        result = []
+        for block in blocks:
+            # Get admins assigned to this specific block
+            admins = UserDal.get_users_by_role_and_block(
+                db=db,
                 role_id=block_admin_role.id,
-                district_id=district.id
-            # )]
-            ) if admin.block_id in block_ids]
-
-            print("Admins blocks", [admin.id for admin in admins])
-
-            print("Admins: ", admins)
+                block_id=block.id
+            )
 
             result.append(BlockAdminResponseSchema(
-                block_id=district.id,
-                block_name=district.name,
+                block_id=block.id,
+                block_name=block.name,
                 admin=BlockAdminUserSchema(
-                    user_id=admins[0].id if admins else None,
-                    user_name=f"{admins[0].first_name} {admins[0].last_name}" if admins else "No Admin"
+                    # **admins[0]
+                    user_id=admins[0].id,
+                    user_name=f"{admins[0].first_name} {admins[0].last_name}"
                 ) if admins else None
             ))
 

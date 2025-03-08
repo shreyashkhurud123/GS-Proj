@@ -1,7 +1,13 @@
 from pydantic import BaseModel
 from typing_extensions import List
+from typing import Optional
 
 from app.schemas.base import CamelModel
+
+
+class BlockBaseSchema(CamelModel):
+    block_id: int
+    block_name: str
 
 
 class BlockAdminUserSchema(CamelModel):
@@ -9,10 +15,8 @@ class BlockAdminUserSchema(CamelModel):
     user_name: str
 
 
-class BlockAdminResponseSchema(CamelModel):
-    block_id: int
-    block_name: str
-    admin: BlockAdminUserSchema
+class BlockAdminResponseSchema(BlockBaseSchema):
+    admin: Optional[BlockAdminUserSchema]
 
     # Check below and add
     # class Config:

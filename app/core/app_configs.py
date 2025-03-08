@@ -5,10 +5,11 @@ from app.routers import file_search_poc
 from app.routers.auth import auth_v1
 from app.routers.blocks import blocks_v1
 from app.routers.districts import districts_v1
+from app.routers.gram_sevaks import gram_sevaks_v1
+from app.routers.preset import preset_v1
 from app.core.api_checks_mw import ApiChecksMW
 from app.core.core_exceptions import UnauthorizedException, InvalidRequestException, \
     NotFoundException, ConflictException, NotAcceptable
-
 
 
 # todo check whether we need API Support
@@ -36,6 +37,8 @@ def create_app() -> FastAPI:
     app.include_router(auth_v1.router)
     app.include_router(blocks_v1.router)
     app.include_router(districts_v1.router)
+    app.include_router(gram_sevaks_v1.router)
+    app.include_router(preset_v1.router)
 
     app.add_middleware(ApiChecksMW)
 

@@ -57,6 +57,12 @@ class User(Base, TimestampMixin):
         foreign_keys=lambda: [UserDocument.__table__.c.user_id]
     )
 
+    district: Mapped["District"] = relationship("District", back_populates="users")
+
+    block: Mapped["Block"] = relationship("Block", back_populates="users")
+
+    gram_panchayat: Mapped["GramPanchayat"] = relationship("GramPanchayat", back_populates="users")
+
     # Storing list of OTP's for user
     # otps: Mapped[List["UserOTP"]] = relationship("UserOTP", back_populates="user")
     # For now storing OTP's for user as single entry only instead of List of OTPs

@@ -17,6 +17,11 @@ class District(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     blocks: Mapped[List["Block"]] = relationship("Block", back_populates="district")
 
+    users: Mapped[List["User"]] = relationship("User", back_populates="district")
+
+    blocks: Mapped[List["Block"]] = relationship("Block", back_populates="district")
+
+
 class Block(Base, TimestampMixin):
     """
         Block -> Panchayat Samiti
@@ -30,9 +35,12 @@ class Block(Base, TimestampMixin):
     district: Mapped["District"] = relationship("District", back_populates="blocks")
     gram_panchayats: Mapped[List["GramPanchayat"]] = relationship("GramPanchayat", back_populates="block")
 
+    users: Mapped[List["User"]] = relationship("User", back_populates="block")
+
     __table_args__ = (
         Index('ix_block_district_name', 'district_id', 'name'),
     )
+
 
 class GramPanchayat(Base, TimestampMixin):
     __tablename__ = 'gram_panchayats'
@@ -42,6 +50,8 @@ class GramPanchayat(Base, TimestampMixin):
     block_id: Mapped[int] = mapped_column(ForeignKey('blocks.id'), index=True)
 
     block: Mapped["Block"] = relationship("Block", back_populates="gram_panchayats")
+
+    users: Mapped[List["User"]] = relationship("User", back_populates="gram_panchayat")
 
     __table_args__ = (
         Index('ix_gram_panchayat_block_name', 'block_id', 'name'),
