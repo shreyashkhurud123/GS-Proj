@@ -18,7 +18,7 @@ router = APIRouter(
 VxAPIPermsUtils.set_perm_post(path=router.prefix + '/send-otp', perm=VxAPIPermsEnum.PUBLIC)
 @router.post(path="/send-otp", summary="Login a user",
              description="Authentication of a user. Returns a JWT Token")
-async def login(user: SendOtpRequestSchema, db: Session = Depends(get_db)):
+async def send_otp(user: SendOtpRequestSchema, db: Session = Depends(get_db)):
     AuthService.send_otp(ph_no=user.mobile_number, db=db)
 
     # return {"Message: ": "OTP generated successfully"}
