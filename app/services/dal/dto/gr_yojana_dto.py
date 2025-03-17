@@ -69,7 +69,7 @@ class GRDTO:
             id=gr.id,
             gr_number=gr.gr_number,
             gr_code=gr.gr_code,
-            department_name=gr.department_name,
+            department_name=gr.department,
             effective_date=gr.effective_date,
             yojana_id=gr.yojana_id,
             file_path=gr.file_path,

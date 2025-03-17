@@ -17,8 +17,8 @@ router = APIRouter(
 )
 
 # VxAPIPermsUtils.set_perm_get(path=router.prefix + '/get-block-admins', perm=VxAPIPermsEnum.ADMIN_READ)
-VxAPIPermsUtils.set_perm_get(path=router.prefix + '/get-block-admins', perm=VxAPIPermsEnum.PUBLIC)
-@router.get("/get-block-admins", response_model=List[BlockAdminResponseSchema],
+VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getblockadmins', perm=VxAPIPermsEnum.PUBLIC)
+@router.get("/getblockadmins", response_model=List[BlockAdminResponseSchema],
             summary="Get block admins by district",
             description="Returns list of districts with their block admins")
 async def get_block_admins(db: Session = Depends(get_db),

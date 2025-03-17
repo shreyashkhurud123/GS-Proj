@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.enums.approval_status import ApprovalStatus, ApprovalStatusRequest
 from app.models.enums.user_designation import UserDesignation
 from app.models.users import User
-from app.services.dal.dto.user_dto import UserDTO
+from app.services.dal.dto.user_dto import UserDTO, UserWithDetailsDTO
 from app.services.dal.role_dal import RoleDal
 
 
@@ -180,3 +180,38 @@ class UserDal:
             .filter(User.id == user_id, User.is_active == True).first()
 
         return UserDTO.to_dto(user) if user else None
+
+    @staticmethod
+    def get_users_block_id(db, block_id):
+        '''
+            DAL function to get the users with role_id and block_id
+        '''
+        users = db.query(User).filter(
+            User.block_id == block_id,
+            User.is_active,
+            User.status == ApprovalStatus.APPROVED
+        ).all()
+        return [UserDTO.to_dto(user) for user in users] if users else []
+
+    @staticmethod
+    def get_users_by_district(db: Session, district_id: int) -> List[UserDTO]:
+
+        print("In DAL:", district_id)
+
+        users = db.query(User).filter(
+            User.district_id == district_id,
+            User.is_active,
+            User.status == ApprovalStatus.APPROVED
+        ).all()
+
+        return [UserDTO.to_dto(user) for user in users] if users else []
+
+    @staticmethod
+    def get_user_details_by_id(db: Session, user_id: int) -> Optional[UserDTO]:
+
+        user = db.query(User).filter(
+            User.id == user_id,
+            User.is_active
+        ).first()
+
+        return UserWithDetailsDTO.to_detailed_dto(user) if user else None

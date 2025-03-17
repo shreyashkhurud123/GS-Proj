@@ -5,6 +5,7 @@ from app.models.gr_yojana import GR, Yojana
 from app.models.otp import UserOTP
 from app.models.users import User
 from app.models.roles import Role
+from app.models.department import Department
 
 __all__ = [
     "Book",
@@ -17,5 +18,6 @@ __all__ = [
     "UserOTP",
     "District",
     "Block",
-    "GramPanchayat"
+    "GramPanchayat",
+    "Department"
 ]

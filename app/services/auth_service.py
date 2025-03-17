@@ -13,6 +13,7 @@ from app.services.dal.auth_dal import AuthDal
 from app.services.dal.user_dal import UserDal
 from app.services.dal.user_hierarchy_dal import GramPanchayatDal, BlockDal, DistrictDal
 from app.utils.jwt_utils import VxJWTUtils
+from app.utils.twilio_utils import send_sms
 
 
 def send_otp_twilio(phone_number: str, otp: str):
@@ -54,8 +55,8 @@ class AuthService:
             # Send OTP via Twilio
             if user.mobile_number == ph_no:
                 pass
-                # message_sid = send_sms(ph_no, otp)
-                message_sid = "test123"
+                message_sid = send_sms(ph_no, otp)
+                # message_sid = "test123"
 
             # Todo check whether we need to send OTP to whatsapp number also?
             # integrate whatsapp OTP also
@@ -63,6 +64,7 @@ class AuthService:
             #     message_sid = send_sms(ph_no, otp)
 
         except Exception as e:
+            print("Getting Twilio Exception: ", e, '\n', str(e))
             raise HTTPException(status_code=500, detail="Twilio Exception")
 
         # Store OTP in the database (optional, for verification later)
@@ -81,12 +83,12 @@ class AuthService:
         access_token = VxJWTUtils.create_access_token(
             data={
                 "user_id": user.id,
-                "login": True
+                "login": True,
             },
             expiry_delta=settings.access_token_expiry
         )
 
-        return access_token
+        return access_token, UserDal.get_user_details_by_id(db=db, user_id=user.id)
 
     @staticmethod
     def register_user(user_data: UserRegisterRequest, db: Session):

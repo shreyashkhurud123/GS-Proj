@@ -51,3 +51,17 @@ async def get_gram_panchayats_by_block(
     """Get gram panchayats by block ID"""
     gps = PresetService.get_gram_panchayats_by_block(db, blockId)
     return gps
+
+
+VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getDepartments', perm=VxAPIPermsEnum.PUBLIC)
+@router.get("/getDepartments"
+    # , response_model=List[GramPanchayatDTO]
+            )
+async def get_departments(
+    db: Session = Depends(get_db)
+):
+    """Get gram panchayats by block ID"""
+    # gps = PresetService.get_gram_panchayats_by_block(db, blockId)
+    # return gps
+
+    return PresetService.get_departments(db=db)

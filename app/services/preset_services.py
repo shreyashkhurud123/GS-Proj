@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+
+from app.services.dal.department_dal import DepartmentDal
 from app.services.dal.user_hierarchy_dal import DistrictDal, BlockDal, GramPanchayatDal
 from app.services.dal.dto.user_hierarchy_dto import (
     DistrictDTO, BlockDTO, GramPanchayatDTO
@@ -16,3 +18,8 @@ class PresetService:
     @staticmethod
     def get_gram_panchayats_by_block(db: Session, block_id: int) -> list[GramPanchayatDTO]:
         return GramPanchayatDal.get_gp_by_block(db, block_id)
+
+    @staticmethod
+    def get_departments(db):
+        return DepartmentDal.get_departments_list(db=db)
+        pass
