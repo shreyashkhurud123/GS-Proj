@@ -55,8 +55,8 @@ class AuthService:
             # Send OTP via Twilio
             if user.mobile_number == ph_no:
                 pass
-                message_sid = send_sms(ph_no, otp)
-                # message_sid = "test123"
+                # message_sid = send_sms(ph_no, otp)
+                message_sid = "test123"
 
             # Todo check whether we need to send OTP to whatsapp number also?
             # integrate whatsapp OTP also

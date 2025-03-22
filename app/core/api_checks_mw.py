@@ -16,6 +16,7 @@ VxAPIPermsUtils.set_perm_get(path="/openapi.json", perm=VxAPIPermsEnum.PUBLIC)
 class ApiChecksMW(BaseHTTPMiddleware):
 
     def __int__(self, app: ASGIApp):
+        print("IN Middleware Initializing middleware")
         super().__init__(app)
 
     @staticmethod
@@ -34,13 +35,18 @@ class ApiChecksMW(BaseHTTPMiddleware):
             # Getting the part after Bearer
             token = auth_header.split(" ")[1]
 
-            payload = VxJWTUtils.verify_access_token(token=token)
+            print("Token: ", token)
+
+            payload = await VxJWTUtils.verify_access_token(token=token)
 
             # Getting subject. Normally its User_id
             sub = int(payload.get("user_id"))
 
+            print("Printing Sub: ", sub)
+
             if not sub:
                 raise UnauthorizedException("Token is missing Subject claims. i.e user_id")
+            return sub
 
         # Todo handle appr errors
         except ValueError as e:
@@ -48,7 +54,7 @@ class ApiChecksMW(BaseHTTPMiddleware):
         except UnauthorizedException:
             raise Exception("Authorization failed")
 
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
+    async def dispatch(self, request: Request, call_next):
         """
             This is an overridden method to define a custom logic to process incoming requests.
             i.e Middleware
@@ -58,11 +64,12 @@ class ApiChecksMW(BaseHTTPMiddleware):
 
         print("In Middleware: ", method, path)
 
-        # todo check below and use
-        # if request.method == "OPTIONS":
-        #     return await call_next(request)
+        if request.method == "OPTIONS":
+            return await call_next(request)
 
         try:
+            print("")
+
             if VxAPIPermsUtils.is_api_public(method=method, path=path):
                 return await call_next(request)
 
@@ -76,9 +83,13 @@ class ApiChecksMW(BaseHTTPMiddleware):
             user_id = await ApiChecksMW.__read_jwt(request)
             request.state.user_id = user_id
 
-            response = await call_next(request)
-            return response
+            print("Request Received: ", request.state.user_id)
 
+            response = await call_next(request)
+
+            print("Response Recieved: ", response.__dict__)
+
+            return response
 
         except UnauthorizedException:
             return HTTPException(401, "UnAuthorized Exception")

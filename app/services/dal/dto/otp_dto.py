@@ -1,7 +1,9 @@
 from datetime import datetime
 from app.models.otp import UserOTP
+from app.services.dal.dto.to_camel import ToCamel
 
-class UserOTPDTO:
+
+class UserOTPDTO(ToCamel):
     def __init__(
         self,
         id: int,

@@ -58,7 +58,7 @@ class GramsevakService:
 
         print("here 2 ")
 
-        if RoleDal.get_role_by_name(db=db, name="Gram_Sevak").id != user.role_id:
+        if RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id:
             raise InvalidRequestException("User is not assigned as Gram Sevak")
 
         print("here 3 ")

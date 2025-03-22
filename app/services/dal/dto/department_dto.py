@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from app.models import Department  # Ensure to import the Department model
+from app.services.dal.dto.to_camel import ToCamel
 
-class DepartmentDTO:
+
+class DepartmentDTO(ToCamel):
     def __init__(
         self,
         id: int,

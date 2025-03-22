@@ -47,7 +47,9 @@ class VxJWTUtils:
         """
 
         try:
+            print("\n In Verify access token: \n")
             payload = jwt.decode(jwt=token, key=JWT_SECRET, algorithms=JWT_ALGO)
+            print("\n printing payload: ", payload)
             return payload
 
         except ExpiredSignatureError:

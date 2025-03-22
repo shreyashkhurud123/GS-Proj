@@ -1,9 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from app.models.users_hierarchy import District, Block, GramPanchayat
+from app.services.dal.dto.to_camel import ToCamel
 
 
-class DistrictDTO:
+class DistrictDTO(ToCamel):
     def __init__(
             self,
             id: int,
@@ -35,7 +36,7 @@ class DistrictDTO:
         )
 
 
-class BlockDTO:
+class BlockDTO(ToCamel):
     def __init__(
             self,
             id: int,
@@ -70,7 +71,7 @@ class BlockDTO:
         )
 
 
-class GramPanchayatDTO:
+class GramPanchayatDTO(ToCamel):
     def __init__(
             self,
             id: int,

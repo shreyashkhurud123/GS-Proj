@@ -1,8 +1,10 @@
 from datetime import date, datetime
 from typing import Optional
 from app.models.gr_yojana import Yojana, GR
+from app.services.dal.dto.to_camel import ToCamel
 
-class YojanaDTO:
+
+class YojanaDTO(ToCamel):
     def __init__(
         self,
         id: int,
@@ -34,7 +36,7 @@ class YojanaDTO:
         )
 
 
-class GRDTO:
+class GRDTO(ToCamel):
     def __init__(
         self,
         id: int,

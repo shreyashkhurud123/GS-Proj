@@ -3,10 +3,11 @@ from typing import Optional
 
 from app.models.users import User
 from app.services.dal.dto.roles_dto import RoleDTO
+from app.services.dal.dto.to_camel import ToCamel
 from app.services.dal.dto.user_hierarchy_dto import DistrictDTO, BlockDTO, GramPanchayatDTO
 
 
-class UserDTO:
+class UserDTO(ToCamel):
     def __init__(
             self,
             id: int,

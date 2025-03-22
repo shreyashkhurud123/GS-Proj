@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from app.models.documents import DocumentType, UserDocument
+from app.services.dal.dto.to_camel import ToCamel
 
-class DocumentTypeDTO:
+
+class DocumentTypeDTO(ToCamel):
     def __init__(
         self,
         id: int,
@@ -36,7 +38,8 @@ class DocumentTypeDTO:
             is_active=doc_type.is_active
         )
 
-class UserDocumentDTO:
+
+class UserDocumentDTO(ToCamel):
     def __init__(
         self,
         id: int,

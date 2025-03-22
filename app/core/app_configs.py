@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.http_errors import HttpErrors
 from app.routers import file_search_poc
@@ -34,7 +35,17 @@ def create_app() -> FastAPI:
         redoc_url="/redoc"
     )
 
-    # app.include_router(file_search_poc.router)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_origin_regex=None,
+        expose_headers=["*"]
+    )
+
+    # Include routers with optional prefixes
     app.include_router(auth_v1.router)
     app.include_router(blocks_v1.router)
     app.include_router(districts_v1.router)
@@ -42,29 +53,27 @@ def create_app() -> FastAPI:
     app.include_router(preset_v1.router)
     app.include_router(users_v1.router)
 
-
+    # Add API checks middleware after CORS middleware
     app.add_middleware(ApiChecksMW)
 
-    # Adding Exceptions:
-
     @app.exception_handler(InvalidRequestException)
-    async def invalid_exception_handler(request, e: InvalidRequestException):
+    async def invalid_exception_handler(request: Request, e: InvalidRequestException):
         return await HttpErrors.http_400(e)
 
     @app.exception_handler(UnauthorizedException)
-    async def unauthorized_exception_handler(e: UnauthorizedException):
+    async def unauthorized_exception_handler(request: Request, e: UnauthorizedException):
         return await HttpErrors.http_401(e)
 
     @app.exception_handler(NotFoundException)
-    async def not_found_exception_handler(e: NotFoundException):
+    async def not_found_exception_handler(request: Request, e: NotFoundException):
         return await HttpErrors.http_404(e)
 
     @app.exception_handler(NotAcceptable)
-    async def not_acceptable_exception_handler(e: NotAcceptable):
+    async def not_acceptable_exception_handler(request: Request, e: NotAcceptable):
         return await HttpErrors.http_406(e)
 
     @app.exception_handler(ConflictException)
-    async def conflict_exception_handler(e: ConflictException):
+    async def conflict_exception_handler(request: Request, e: ConflictException):
         return await HttpErrors.http_409(e)
 
     return app

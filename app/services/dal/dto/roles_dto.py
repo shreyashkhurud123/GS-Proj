@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from app.models.roles import Role
+from app.services.dal.dto.to_camel import ToCamel
 
-class RoleDTO:
+
+class RoleDTO(ToCamel):
     def __init__(
         self,
         id: int,

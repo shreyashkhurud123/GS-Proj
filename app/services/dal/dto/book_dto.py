@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from app.models.books import Book
+from app.services.dal.dto.to_camel import ToCamel
 
-class BookDTO:
+
+class BookDTO(ToCamel):
     def __init__(
         self,
         id: int,

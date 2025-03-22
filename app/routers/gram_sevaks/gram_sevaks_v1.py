@@ -31,7 +31,7 @@ async def get_gramsevak_list(
     return GramsevakService.get_gramsevak_list(db, search_term=searchTerm, status_filter=status)
 
 
-VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getGramsevakById', perm=VxAPIPermsEnum.PUBLIC)
+VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getGramsevakById', perm=VxAPIPermsEnum.AUTHENTICATED)
 @router.get("/getGramsevakById")
             # response_model=GramsevakDetailResponse)
 async def get_gramsevak_by_id(
