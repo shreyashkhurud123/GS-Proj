@@ -93,33 +93,37 @@ class AuthService:
     @staticmethod
     def register_user(user_data: UserRegisterRequest, db: Session):
 
+        print("User Data: ", user_data.__dict__)
+
         if UserDal.get_user_by_mobile(user_data.mobile_number, db):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"User with phone number {user_data.mobile_number} Already exists"
             )
 
-        district = DistrictDal.get_district_by_id(db=db, district_id=user_data.zilla_parishad_id)
-        if not district:
-            raise NotFoundException(f"District with district id {user_data.zilla_parishad_id} Not Found")
+        district = DistrictDal.get_district_by_id(db=db, district_id=user_data.district_id)
 
-        block = BlockDal.get_block_by_id(db=db, block_id=user_data.panchayat_samiti_id)
+        if not district:
+            raise NotFoundException(f"District with district id {user_data.district_id} Not Found")
+
+        block = BlockDal.get_block_by_id(db=db, block_id=user_data.block_id)
+
         if not block:
-            raise NotFoundException(f"block with block id {user_data.panchayat_samiti_id} Not Found")
+            raise NotFoundException(f"block with block id {user_data.block_id} Not Found")
 
         # Checking if provided District ID is indeed the parent of provided block
-        if district.id != block.district_id:
+        if district.district_id != block.district_id:
             HTTPException(403, "Provided block does not belong to the provided district")
 
         gram_panchayat = GramPanchayatDal.get_gram_panchayat_by_id(db=db, gp_id=user_data.gram_panchayat_id)
 
-        block = BlockDal.get_block_by_id(db=db, block_id=user_data.panchayat_samiti_id)
+        block = BlockDal.get_block_by_id(db=db, block_id=user_data.block_id)
         if not block:
-            raise NotFoundException(f"block with block id {user_data.panchayat_samiti_id} Not Found")
+            raise NotFoundException(f"block with block id {user_data.block_id} Not Found")
 
         # Checking if provided block is indeed parent of grampanchayat
-        if gram_panchayat.block_id != block.id:
-            HTTPException (403, "Provided gram panchayat does not belong to the provided block(Panchayat Samiti)")
+        if gram_panchayat.block_id != block.block_id:
+            HTTPException(403, "Provided gram panchayat does not belong to the provided block(Panchayat Samiti)")
 
         UserDal.create_user(
             first_name=user_data.first_name,
@@ -128,10 +132,10 @@ class AuthService:
             mobile_number=user_data.mobile_number,
             whatsapp_number=user_data.whatsapp_number,
             designation=user_data.designation,
-            district_id=user_data.zilla_parishad_id,
-            block_id=user_data.panchayat_samiti_id,
+            district_id=user_data.district_id,
+            block_id=user_data.block_id,
             gram_panchayat_id=user_data.gram_panchayat_id,
             # By default we are sending Approved
-            status=ApprovalStatus.APPROVED,
+            status=ApprovalStatus.PENDING,
             db=db
         )

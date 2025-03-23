@@ -18,27 +18,31 @@ router = APIRouter(
     responses={404: {"description": "Not Found"}}
 )
 
-
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getDistricts', perm=VxAPIPermsEnum.PUBLIC)
 @router.get("/getDistricts"
-        # ,response_model=List[DistrictDTO]
+            # ,response_model=List[DistrictDTO]
             )
 async def get_districts(db: Session = Depends(get_db)):
     """Get all active districts"""
     districts = PresetService.get_all_districts(db)
 
-    print("In District router: ", districts )
+    print("In District router: ", districts)
 
     return [dist.to_camel() for dist in districts]
+    # return [
+    #     {'districtId': district.district_id,
+    #      'districtName': district.district_name
+    #      } for district in districts
+    # ]
 
 
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getBlocksByDictrictId', perm=VxAPIPermsEnum.PUBLIC)
 @router.get("/getBlocksByDictrictId"
-    # , response_model=List[BlockDTO]
+            # , response_model=List[BlockDTO]
             )
 async def get_blocks_by_district(
-    districtId: int = Query(..., alias="districtId"),
-    db: Session = Depends(get_db)
+        districtId: int = Query(..., alias="districtId"),
+        db: Session = Depends(get_db)
 ):
     """Get blocks by district ID"""
     blocks = PresetService.get_blocks_by_district(db, districtId)
@@ -47,11 +51,11 @@ async def get_blocks_by_district(
 
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getGramPanchayatsByBlockId', perm=VxAPIPermsEnum.PUBLIC)
 @router.get("/getGramPanchayatsByBlockId"
-    # , response_model=List[GramPanchayatDTO]
+            # , response_model=List[GramPanchayatDTO]
             )
 async def get_gram_panchayats_by_block(
-    blockId: int = Query(..., alias="blockId"),
-    db: Session = Depends(get_db)
+        blockId: int = Query(..., alias="blockId"),
+        db: Session = Depends(get_db)
 ):
     """Get gram panchayats by block ID"""
     gps = PresetService.get_gram_panchayats_by_block(db, blockId)
@@ -60,10 +64,10 @@ async def get_gram_panchayats_by_block(
 
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getDepartments', perm=VxAPIPermsEnum.PUBLIC)
 @router.get("/getDepartments"
-    # , response_model=List[GramPanchayatDTO]
+            # , response_model=List[GramPanchayatDTO]
             )
 async def get_departments(
-    db: Session = Depends(get_db)
+        db: Session = Depends(get_db)
 ):
     """Get gram panchayats by block ID"""
     # gps = PresetService.get_gram_panchayats_by_block(db, blockId)

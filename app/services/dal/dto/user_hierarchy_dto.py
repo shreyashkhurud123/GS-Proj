@@ -15,8 +15,8 @@ class DistrictDTO(ToCamel):
             # created_by: Optional[int],
             # updated_by: Optional[int]
     ):
-        self.id = id
-        self.name = name
+        self.district_id = id
+        self.district_name = name
         self.created_at = created_at
         self.updated_at = updated_at
         self.is_active = is_active
@@ -48,8 +48,8 @@ class BlockDTO(ToCamel):
             # created_by: Optional[int],
             # updated_by: Optional[int]
     ):
-        self.id = id
-        self.name = name
+        self.block_id = id
+        self.block_name = name
         self.district_id = district_id
         self.created_at = created_at
         self.updated_at = updated_at
@@ -83,8 +83,8 @@ class GramPanchayatDTO(ToCamel):
             # created_by: Optional[int],
             # updated_by: Optional[int]
     ):
-        self.id = id
-        self.name = name
+        self.gram_panchayat_id = id
+        self.gram_panchayat_name = name
         self.block_id = block_id
         self.created_at = created_at
         self.updated_at = updated_at

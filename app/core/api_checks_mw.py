@@ -78,6 +78,8 @@ class ApiChecksMW(BaseHTTPMiddleware):
             if auth_header and not auth_header.startswith("Bearer "):
                 raise UnauthorizedException("Invalid Token")
 
+            print("Printing request: ", request.headers.get("Authorization"))
+
             # Todo refactor and optimize below
             # Validating JWT and getting user_id
             user_id = await ApiChecksMW.__read_jwt(request)

@@ -82,7 +82,7 @@ class UserDal:
                     mobile_number: str, whatsapp_number: str,
                     gram_panchayat_id: int,
                     designation: UserDesignation, district_id: int, block_id: int,
-                    status: ApprovalStatus, role_id: Optional[int] = 1):
+                    status: ApprovalStatus, role_id: Optional[int] = 4):
 
         new_user = User(
             first_name=first_name,
@@ -191,6 +191,7 @@ class UserDal:
             User.is_active,
             User.status == ApprovalStatus.APPROVED
         ).all()
+
         return [UserDTO.to_dto(user) for user in users] if users else []
 
     @staticmethod
@@ -207,7 +208,7 @@ class UserDal:
         return [UserDTO.to_dto(user) for user in users] if users else []
 
     @staticmethod
-    def get_user_details_by_id(db: Session, user_id: int) -> Optional[UserDTO]:
+    def get_user_details_by_id(db: Session, user_id: int) -> Optional[UserWithDetailsDTO]:
 
         user = db.query(User).filter(
             User.id == user_id,

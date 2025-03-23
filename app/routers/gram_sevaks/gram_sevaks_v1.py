@@ -28,7 +28,9 @@ async def get_gramsevak_list(
     status: Optional[ApprovalStatusRequest] = Query(default=ApprovalStatusRequest.ALL),
     db: Session = Depends(get_db)
 ):
+    print("In Router")
     return GramsevakService.get_gramsevak_list(db, search_term=searchTerm, status_filter=status)
+    # return [gs.to_camel() for gs in GramsevakService.get_gramsevak_list(db, search_term=searchTerm, status_filter=status)]
 
 
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getGramsevakById', perm=VxAPIPermsEnum.AUTHENTICATED)
@@ -42,12 +44,14 @@ async def get_gramsevak_by_id(
     return GramsevakService.get_gramsevak_details(db, gramsevak_id=id)
 
 
-VxAPIPermsUtils.set_perm_patch(path=router.prefix + '/changeStatus', perm=VxAPIPermsEnum.PUBLIC)
+VxAPIPermsUtils.set_perm_patch(path=router.prefix + '/changeStatus', perm=VxAPIPermsEnum.AUTHENTICATED)
 @router.patch("/changeStatus")
 async def change_gramsevak_status(
     request: ChangeStatusRequest,
     db: Session = Depends(get_db)
 ):
+
+    print("Hitting The router:")
 
     return GramsevakService.update_gramsevak_status(
         db, 

@@ -27,12 +27,12 @@ class BlockService:
             admins = UserDal.get_users_by_role_and_block(
                 db=db,
                 role_id=block_admin_role.id,
-                block_id=block.id
+                block_id=block.block_id
             )
 
             result.append(BlockAdminResponseSchema(
-                block_id=block.id,
-                block_name=block.name,
+                block_id=block.block_id,
+                block_name=block.block_name,
                 admin=BlockAdminUserSchema(
                     # **admins[0]
                     user_id=admins[0].id,
@@ -76,8 +76,8 @@ class BlockService:
             success=True,
             message="Block admin updated successfully",
             admin_details=BlockAdminResponseSchema(
-                block_id=block.id,
-                block_name=block.name,
+                block_id=block.block_id,
+                block_name=block.block_name,
                 admin=BlockAdminUserSchema(
                     user_id=updated_user.id,
                     user_name=f"{updated_user.first_name} {updated_user.last_name}"

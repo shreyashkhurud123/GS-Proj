@@ -17,9 +17,13 @@ class GramsevakService:
             status_filter: ApprovalStatusRequest= ApprovalStatusRequest.ALL
     ) -> List[GramsevakListItem]:
 
-        gramsevak_role = RoleDal.get_role_by_name(db, "Gram_Sevak")
+        print("In service layer")
+
+        gramsevak_role = RoleDal.get_role_by_name(db, "gramSevak")
         if not gramsevak_role:
             raise NotFoundException("Gram Sevak role not found")
+
+        print("Here 1")
 
         users = UserDal.get_gramsevaks(
             db,
@@ -28,21 +32,35 @@ class GramsevakService:
             status_filter=status_filter
         )
 
+        print("Here 2")
+
         result = []
         for user in users:
             district = DistrictDal.get_district_by_id(db, user.district_id)
             block = BlockDal.get_block_by_id(db, user.block_id)
+            # {
+            #     id: "2",
+            #     firstName: "Jane",
+            #     lastName: "Smith",
+            #     email: "jane@example.com",
+            #     block: "Block B",
+            #     district: "District 2",
+            #     serviceId: "GS002",
+            #     isApproved: false,
+            # },
 
             result.append({
                 "id": user.id,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
+                "firstName": user.first_name,
+                "lastName": user.last_name,
                 "email": user.email,
-                "block": block.name if block else "N/A",
-                "district": district.name if district else "N/A",
+                "block": block.block_name if block else "N/A",
+                "district": district.district_name if district else "N/A",
                 "service_id": 'temp_service_id',
                 "is_approved": user.status == "APPROVED"
             })
+
+        print("Here 3")
 
         return result
 
@@ -76,16 +94,16 @@ class GramsevakService:
             "last_name": user.last_name,
             "designation_name": user.designation.name,
             "district": {
-                "district_id": district.id,
-                "district_name": district.name
+                "district_id": district.district_id,
+                "district_name": district.district_name
             },
             "block": {
-                "block_id": block.id,
-                "block_name": block.name
+                "block_id": block.block_id,
+                "block_name": block.block_name
             },
             "gram_panchayat": {
-                "gram_panchayat_id": gram_panchayat.id,
-                "gram_panchayat_name": gram_panchayat.name
+                "gram_panchayat_id": gram_panchayat.gram_panchayat_id,
+                "gram_panchayat_name": gram_panchayat.gram_panchayat_name
             },
             "mobile_number": user.mobile_number,
             "whatsapp_number": user.whatsapp_number,
@@ -104,15 +122,20 @@ class GramsevakService:
             new_status: ApprovalStatus
     ):
 
+        print("Hitting The Service layer:")
         user = UserDal.get_user_by_id(db, gramsevak_id)
 
         if not user or not user.role_id:
             raise NotFoundException("Gramsevak not found")
 
-        if not RoleDal.get_role_by_name(db=db, name="Gram_Sevak").id != user.role_id:
+        print("Here 2", user.__dict__)
+
+        if RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id:
             raise NotFoundException("Role id not found")
 
         print("Calling DAL")
+
+        print("Here 3 Calling Update status DAL")
 
         UserDal.update_user(
             db,

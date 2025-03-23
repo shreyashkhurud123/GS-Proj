@@ -24,7 +24,7 @@ class DistrictService:
 
         if search_term:
             districts = [district for district in DistrictDal.get_all_districts(db) if
-                         search_term.lower() in district.name.lower()]
+                         search_term.lower() in district.district_name.lower()]
         else:
             districts = DistrictDal.get_all_districts(db)
         result = []
@@ -33,12 +33,12 @@ class DistrictService:
             admins = UserDal.get_users_by_role_and_district(
                 db,
                 role_id=district_admin_role.id,
-                district_id=district.id
+                district_id=district.district_id
             )
 
             result.append(DistrictAdminResponseSchema(
-                district_id=district.id,
-                district_name=district.name,
+                district_id=district.district_id,
+                district_name=district.district_name,
                 admin={
                     "user_id": admins[0].id if admins else None,
                     "user_name": f"{admins[0].first_name} {admins[0].last_name}"
@@ -81,8 +81,8 @@ class DistrictService:
             success=True,
             message="District admin updated successfully",
             admin_details=DistrictAdminResponseSchema(
-                district_id=district.id,
-                district_name=district.name,
+                district_id=district.district_id,
+                district_name=district.district_name,
                 admin={
                     "user_id": updated_user.id,
                     "user_name": f"{updated_user.first_name} {updated_user.last_name}"

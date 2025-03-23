@@ -40,9 +40,9 @@ async def login(login_info: LoginRequestSchema, db: Session = Depends(get_db)):
             "roleName": user_with_details.role.name,
             "userEmail": user_with_details.email,
             "blockId": user_with_details.block_id,
-            "blockName": user_with_details.block.name,
+            "blockName": user_with_details.block.block_name,
             "districtId": user_with_details.district_id,
-            "distrcictName": user_with_details.district.name,
+            "distrcictName": user_with_details.district.district_name,
             "isApprovalPending": user_with_details.status != ApprovalStatus.APPROVED,
             # Todo take necessary details later
             # "User": user_with_details

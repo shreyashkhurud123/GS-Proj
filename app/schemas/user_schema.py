@@ -39,22 +39,23 @@ class UserRegisterRequest(SendOtpRequestSchema):
     """
         Register User details
     """
+    # districtId: 1,
+    # blockId: 1,
     first_name: str
     last_name: str
-    # Todo check this
-    # designation_id: int
+
     designation: UserDesignation
 
     # District
-    zilla_parishad_id: int
+    district_id: int
 
     # Block
-    panchayat_samiti_id: int
+    block_id: int
 
     # gram_panchayats
     gram_panchayat_id: int
 
-    # mobile_number: str
+    mobile_number: str
     whatsapp_number: str
 
     # As discussed with Avdhoot keep email compulsory
