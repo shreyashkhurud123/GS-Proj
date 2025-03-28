@@ -18,7 +18,7 @@ class DistrictService:
             Getting districts admins by search term for district name
         '''
 
-        district_admin_role = RoleDal.get_role_by_name(db, "District_Admin")
+        district_admin_role = RoleDal.get_role_by_name(db, "districtAdmin")
         if not district_admin_role:
             raise NotFoundException("District Admin role not configured")
 
@@ -35,6 +35,8 @@ class DistrictService:
                 role_id=district_admin_role.id,
                 district_id=district.district_id
             )
+
+            print(admins)
 
             result.append(DistrictAdminResponseSchema(
                 district_id=district.district_id,
@@ -67,6 +69,8 @@ class DistrictService:
 
         # if not UserDal.is_user_in_role(db, user_id, "District_Admin"):
         #     raise InvalidRequestException("User must have District Admin role")
+
+        UserDal.update_district_admin_to_gs(db=db, district_id=district_id)
 
         updated_user = UserDal.update_user(
             db=db,

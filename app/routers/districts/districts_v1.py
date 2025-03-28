@@ -16,7 +16,7 @@ from app.dependencies.auth import get_current_user
 
 
 router = APIRouter(
-    prefix="/v1/districts",
+    prefix="/v1/district",
     tags=["districts"],
     responses={404: {"description": "Not Found"}}
 )
@@ -39,23 +39,26 @@ async def get_district_admins(db: Session = Depends(get_db),
 
 # VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.ADMIN_WRITE)
 # VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.AUTHENTICATED)
-VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updatedistrictadmin', perm=VxAPIPermsEnum.PUBLIC)
-@router.post("/updatedistrictadmin", response_model=DistrictAdminUpdateResponse,
+VxAPIPermsUtils.set_perm_post(path=router.prefix + '/updateDistrictAdmin', perm=VxAPIPermsEnum.AUTHENTICATED)
+@router.post("/updateDistrictAdmin", response_model=DistrictAdminUpdateResponse,
              summary="Update district admin",
              description="Assign/update district admin for a specific district")
 async def update_district_admin(
+        # Todo check this
         update_data: DistrictAdminUpdateRequest,
         db: Session = Depends(get_db),
         # As discussed with Avdhoot removing the validation for requesting user
-        # requesting_user: UserDTO = Depends(get_current_user)
+        requesting_user: UserDTO = Depends(get_current_user)
 ):
     # if requesting_user.role_id not in (1,):  # Only super admin
     #     raise InvalidRequestException("Requesting User not authorized")
 
+    # print("Printing in Update district data: ", update_data.district_id, update_data.user_id, requesting_user)
+
     return DistrictService.update_district_admin(
         db=db,
         district_id=update_data.district_id,
-        user_id=update_data.user_id,
-        # updated_by=requesting_user.id
-        updated_by=1
+        user_id=update_data.admin.user_id,
+        updated_by=requesting_user.id
+        # updated_by=1
     )

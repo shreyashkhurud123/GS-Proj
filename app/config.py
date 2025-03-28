@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # Common Utils vars
     otp_expiry_time: int = 5
 
-    # UPLOAD_FOLDER: str = "uploads/"
+    # UPLOAD_FOLDER: str = "upload/"
     # ALLOWED_EXTENSIONS: set = {"pdf", "jpg", "jpeg", "png"}
 
     class Config:

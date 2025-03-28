@@ -63,4 +63,7 @@ class VxAPIPermsUtils:
     @staticmethod
     def is_api_public(method: str, path: str) -> bool:
         """ Function to check whether the provided route with Path is public"""
+        # print("RRoutes dictt: ")
+        # from pprint import pprint
+        # pprint(VxAPIPermsUtils._vx_perms_dict.__dict__)
         return VxAPIPermsUtils._vx_perms_dict.get().get((method, path)) == VxAPIPermsEnum.PUBLIC

@@ -1,6 +1,8 @@
 # app/schemas/gramsevak_schema.py
+from typing import List
+
+from fastapi import UploadFile
 from pydantic import BaseModel
-from typing import List, Optional
 
 from app.models.enums.approval_status import ApprovalStatus
 from app.schemas.base import CamelModel
@@ -15,6 +17,7 @@ class GramsevakListItem(CamelModel):
     service_id: str
     district: str
     is_approved: bool
+
 
 
 class DesignationSchema(CamelModel):
@@ -59,3 +62,8 @@ class GramsevakDetailResponse(CamelModel):
 class ChangeStatusRequest(CamelModel):
     gramsevak_id: int
     status: ApprovalStatus
+
+class DocumentUploadRequest(BaseModel):
+    documentTypeId: int
+    document: UploadFile
+    # document: File

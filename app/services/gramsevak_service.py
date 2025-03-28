@@ -1,20 +1,49 @@
-from sqlalchemy.orm import Session
+import base64
+import logging
+import os
+from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
+
+import aiofiles
+from fastapi import HTTPException
+from fastapi import UploadFile
+from sqlalchemy.orm import Session
+
 from app.core.core_exceptions import NotFoundException, InvalidRequestException
 from app.models.enums.approval_status import ApprovalStatus, ApprovalStatusRequest
 from app.schemas.gramsevak_schema import GramsevakListItem, GramsevakDetailResponse
 from app.services.dal.document_dal import UserDocumentDal
-from app.services.dal.user_hierarchy_dal import DistrictDal, BlockDal, GramPanchayatDal
 from app.services.dal.role_dal import RoleDal
 from app.services.dal.user_dal import UserDal
+from app.services.dal.user_hierarchy_dal import DistrictDal, BlockDal, GramPanchayatDal
 
 
 class GramsevakService:
+
+    @staticmethod
+    def read_document_content(file_path: str) -> str:
+        # Check if the file exists first
+        print(os.getcwd())
+        if not os.path.exists(file_path):
+            logging.error(f"File not found: {file_path}")
+            return None
+
+        try:
+            print("File Reading: ")
+            with open(file_path, "rb") as file:
+                file_bytes = file.read()
+            # Encode the file bytes to a Base64 string
+            return base64.b64encode(file_bytes).decode("utf-8")
+        except Exception as e:
+            logging.error(f"Error reading file {file_path}: {str(e)}")
+            return None
+
     @staticmethod
     def get_gramsevak_list(
             db: Session,
             search_term: Optional[str] = None,
-            status_filter: ApprovalStatusRequest= ApprovalStatusRequest.ALL
+            status_filter: ApprovalStatusRequest = ApprovalStatusRequest.ALL
     ) -> List[GramsevakListItem]:
 
         print("In service layer")
@@ -57,7 +86,8 @@ class GramsevakService:
                 "block": block.block_name if block else "N/A",
                 "district": district.district_name if district else "N/A",
                 "service_id": 'temp_service_id',
-                "is_approved": user.status == "APPROVED"
+                "is_approved": user.status == "APPROVED",
+                "documentsUploaded": user.documents_uploaded
             })
 
         print("Here 3")
@@ -76,6 +106,8 @@ class GramsevakService:
 
         print("here 2 ")
 
+        print(RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id)
+
         if RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id:
             raise InvalidRequestException("User is not assigned as Gram Sevak")
 
@@ -87,12 +119,28 @@ class GramsevakService:
 
         print("here 4 ")
 
-        # documents = UserDocumentDal.get_user_documents(db, user.id)
+        documents = UserDocumentDal.get_user_documents(db, user.id)
+
+        user_data = user.to_camel()
+
+        user_data['documents'] = [
+            {
+                "documentTypeId": doc.document_type_id,
+                "documentType": doc.document_type,
+                # "document_name": doc.document_type.name,
+                "document": GramsevakService.read_document_content(os.path.join(
+                    os.getcwd(), 'static', 'upload', doc.file_path)),
+                "verification_status": doc.verification_status
+            } for doc in documents
+        ]
+
+        return user_data
 
         return {
             "first_name": user.first_name,
             "last_name": user.last_name,
             "designation_name": user.designation.name,
+
             "district": {
                 "district_id": district.district_id,
                 "district_name": district.district_name
@@ -144,3 +192,60 @@ class GramsevakService:
         )
 
         return {"message": "Status updated successfully"}
+
+    @staticmethod
+    async def upload_gs_docs(db: Session, gramsevak_id: int, documents) -> dict:
+        user = UserDal.get_user_by_id(db, gramsevak_id)
+        if not user:
+            raise NotFoundException("Requesting User not Found")
+
+        print("Documents: ", documents)
+
+        uploaded_docs = []
+        for doc_id, file in documents.items():
+            try:
+                file_path = await GramsevakService.save_file_to_storage(
+                    file=file, user_id=gramsevak_id, document_type_id=doc_id
+                )
+
+                user_doc = UserDocumentDal.create_user_document(
+                    db=db,
+                    user_id=gramsevak_id,
+                    document_type_id=doc_id,
+                    file_path=file_path
+                )
+                uploaded_docs.append(user_doc)
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Failed to upload document {file.filename}: {str(e)}"
+                )
+
+        UserDal.set_documents_uploaded_to_true(db=db, user_id=gramsevak_id)
+
+        return {"message": "Documents uploaded successfully"}
+
+    @staticmethod
+    async def save_file_to_storage(file: UploadFile, user_id: int, document_type_id: int,
+                                   static_folder: str = "static/upload") -> str:
+        try:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            user_folder = f"user_{user_id}"
+            doc_type_folder = f"doc_type_{document_type_id}"
+
+            upload_path = Path(static_folder) / user_folder / doc_type_folder
+            upload_path.mkdir(parents=True, exist_ok=True)
+
+            file_extension = Path(file.filename).suffix
+            new_filename = f"{timestamp}_{Path(file.filename).stem}{file_extension}"
+            file_path = upload_path / new_filename
+
+            async with aiofiles.open(file_path, "wb") as buffer:
+                while chunk := await file.read(1024):  # Read in chunks
+                    await buffer.write(chunk)
+
+            return str(file_path.relative_to(static_folder))
+
+        except Exception as e:
+            raise RuntimeError(f"File save failed: {str(e)}")

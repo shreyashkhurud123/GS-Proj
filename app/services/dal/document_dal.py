@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.models.documents import DocumentType, UserDocument
+from app.models.enums.approval_status import ApprovalStatus
 from app.services.dal.dto.document_dto import DocumentTypeDTO, UserDocumentDTO
 
 
@@ -30,17 +31,27 @@ class DocumentTypeDal:
 
 class UserDocumentDal:
     @staticmethod
-    def create_user_document(db: Session, user_id: int, document_type_id: int,
-                             file_path: str, created_by: int) -> UserDocument:
+    def create_user_document(db: Session, user_id: int, document_type_id: int, file_path: str):
+
+        existing_doc = db.query(UserDocument).filter_by(user_id=user_id, document_type_id=document_type_id).first()
+
+        # If an existing document is found, delete it
+        if existing_doc:
+            db.delete(existing_doc)
+            db.commit()  # Commit deletion before inserting new document
+
         new_doc = UserDocument(
             user_id=user_id,
             document_type_id=document_type_id,
             file_path=file_path,
-            created_by=created_by
+            verification_status=ApprovalStatus.PENDING,
+            created_by=user_id,
+            updated_by=user_id
         )
         db.add(new_doc)
         db.commit()
         db.refresh(new_doc)
+
         return new_doc
 
     @staticmethod

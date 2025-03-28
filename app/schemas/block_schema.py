@@ -27,8 +27,10 @@ class BlockAdminResponseSchema(BlockBaseSchema):
 
 class BlockAdminUpdateRequest(CamelModel):
     block_id: int
-    user_id: int
-    # admin: BlockAdminUserSchema
+    # user_id: int
+    admin: BlockAdminUserSchema
+
+    model_config = {"allow_extra": True}
 
 
 class BlockAdminUpdateResponse(CamelModel):

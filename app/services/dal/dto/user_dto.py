@@ -26,12 +26,15 @@ class UserDTO(ToCamel):
             updated_at: Optional[datetime],
             created_by: int,
             updated_by: int,
-            is_active: bool
+            is_active: bool,
+            documents_uploaded: bool
     ):
         # User data
         self.id = id
+        self.user_id = id
         self.first_name = first_name
         self.last_name = last_name
+        self.user_name = first_name + " " + last_name
         self.email = email
         self.mobile_number = mobile_number
         self.whatsapp_number = whatsapp_number
@@ -48,6 +51,7 @@ class UserDTO(ToCamel):
         self.created_by = created_by
         self.updated_by = updated_by
         self.is_active = is_active
+        self.documents_uploaded = documents_uploaded
 
     @staticmethod
     def to_dto(user: User) -> "UserDTO":
@@ -68,7 +72,8 @@ class UserDTO(ToCamel):
             updated_at=user.updated_at,
             created_by=user.created_by,
             updated_by=user.updated_by,
-            is_active=user.is_active
+            is_active=user.is_active,
+            documents_uploaded=user.documents_uploaded
         )
 
 
@@ -95,9 +100,9 @@ class UserWithDetailsDTO(UserDTO):
             updated_at: Optional[datetime],
             created_by: int,
             updated_by: int,
-            is_active: bool
+            is_active: bool,
+            documents_uploaded: bool
     ):
-
         super().__init__(
             id=id,
             first_name=first_name,
@@ -115,7 +120,8 @@ class UserWithDetailsDTO(UserDTO):
             updated_at=updated_at,
             created_by=created_by,
             updated_by=updated_by,
-            is_active=is_active
+            is_active=is_active,
+            documents_uploaded=documents_uploaded
         )
 
         # Additional fields specific to UserWithDetailsDTO
@@ -147,5 +153,6 @@ class UserWithDetailsDTO(UserDTO):
             updated_at=user.updated_at,
             created_by=user.created_by,
             updated_by=user.updated_by,
-            is_active=user.is_active
+            is_active=user.is_active,
+            documents_uploaded=user.documents_uploaded
         )

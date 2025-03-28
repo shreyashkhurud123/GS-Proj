@@ -55,7 +55,7 @@ class UserDocument(Base, TimestampMixin):
     # Relationships
     # user: Mapped["User"] = relationship(back_populates="documents")
     user: Mapped["User"] = relationship("User", back_populates="documents")
-    document_type: Mapped["DocumentType"] = relationship("DocumentType")
+    document_type: Mapped["DocumentType"] = relationship("DocumentType", lazy="joined")
 
     created_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'))
     updated_by: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'))

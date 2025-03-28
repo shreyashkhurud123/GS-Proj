@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
 
 from app.core.http_errors import HttpErrors
 from app.routers import file_search_poc
@@ -12,6 +13,7 @@ from app.routers.users import users_v1
 from app.core.api_checks_mw import ApiChecksMW
 from app.core.core_exceptions import UnauthorizedException, InvalidRequestException, \
     NotFoundException, ConflictException, NotAcceptable
+from app.routers.upload import upload_v1
 
 
 # todo check whether we need API Support
@@ -19,7 +21,8 @@ from app.core.core_exceptions import UnauthorizedException, InvalidRequestExcept
 
 
 # todo check auth
-# oauth2_schema = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_schema = OAuth2PasswordBearer(tokenUrl="token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="v1/auth/login")
 
 
 def create_app() -> FastAPI:
@@ -52,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(gram_sevaks_v1.router)
     app.include_router(preset_v1.router)
     app.include_router(users_v1.router)
+    app.include_router(upload_v1.router)
 
     # Add API checks middleware after CORS middleware
     app.add_middleware(ApiChecksMW)

@@ -179,7 +179,7 @@ class UserDal:
             joinedload(User.gram_panchayat), joinedload(User.role)) \
             .filter(User.id == user_id, User.is_active == True).first()
 
-        return UserDTO.to_dto(user) if user else None
+        return UserWithDetailsDTO.to_detailed_dto(user) if user else None
 
     @staticmethod
     def get_users_block_id(db, block_id):
@@ -216,3 +216,49 @@ class UserDal:
         ).first()
 
         return UserWithDetailsDTO.to_detailed_dto(user) if user else None
+
+    @staticmethod
+    def set_documents_uploaded_to_true(db: Session, user_id: int):
+
+        user = db.query(User).filter(
+            User.id == user_id,
+        ).first()
+
+        user.documents_uploaded = True
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    @staticmethod
+    def update_district_admin_to_gs(db, district_id):
+
+        user = db.query(User).filter(
+            User.role_id == 2,
+            User.district_id == district_id
+        ).first()
+
+        if not user:
+            return None
+
+        user.role_id = 4
+
+        db.commit()
+        db.refresh(user)
+
+    @staticmethod
+    def update_block_admin_to_gs(db, block_id):
+
+        user = db.query(User).filter(
+            User.role_id == 3,
+            User.block_id == block_id
+        ).first()
+
+        # print("In User DAL: User Found", user.role_id, user.block_id, user.id)
+
+        if not user:
+            return None
+
+        user.role_id = 4
+        db.commit()
+        db.refresh(user)

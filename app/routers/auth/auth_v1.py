@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.config import get_db
 from app.models.enums.approval_status import ApprovalStatus
 from app.models.enums.vx_api_perms_enum import VxAPIPermsEnum
 from app.schemas.user_schema import LoginRequestSchema, SendOtpRequestSchema, MessageResponse, UserRegisterRequest
-from app.config import get_db
 from app.services.auth_service import AuthService
 from app.utils.vx_api_perms_utils import VxAPIPermsUtils
 
@@ -44,6 +44,7 @@ async def login(login_info: LoginRequestSchema, db: Session = Depends(get_db)):
             "districtId": user_with_details.district_id,
             "distrcictName": user_with_details.district.district_name,
             "isApprovalPending": user_with_details.status != ApprovalStatus.APPROVED,
+            "isDocumentUploadComplete": user_with_details.documents_uploaded,
             # Todo take necessary details later
             # "User": user_with_details
             }

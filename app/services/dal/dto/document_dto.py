@@ -6,15 +6,15 @@ from app.services.dal.dto.to_camel import ToCamel
 
 class DocumentTypeDTO(ToCamel):
     def __init__(
-        self,
-        id: int,
-        name: str,
-        is_mandatory: bool,
-        created_by: Optional[int],
-        updated_by: Optional[int],
-        created_at: datetime,
-        updated_at: Optional[datetime],
-        is_active: bool
+            self,
+            id: int,
+            name: str,
+            is_mandatory: bool,
+            created_by: Optional[int],
+            updated_by: Optional[int],
+            created_at: datetime,
+            updated_at: Optional[datetime],
+            is_active: bool
     ):
         self.id = id
         self.name = name
@@ -41,21 +41,23 @@ class DocumentTypeDTO(ToCamel):
 
 class UserDocumentDTO(ToCamel):
     def __init__(
-        self,
-        id: int,
-        user_id: int,
-        document_type_id: int,
-        file_path: str,
-        verification_status: str,
-        created_by: Optional[int],
-        updated_by: Optional[int],
-        created_at: datetime,
-        updated_at: Optional[datetime],
-        is_active: bool
+            self,
+            id: int,
+            document_type: str,
+            user_id: int,
+            document_type_id: int,
+            file_path: str,
+            verification_status: str,
+            created_by: Optional[int],
+            updated_by: Optional[int],
+            created_at: datetime,
+            updated_at: Optional[datetime],
+            is_active: bool
     ):
         self.id = id
         self.user_id = user_id
         self.document_type_id = document_type_id
+        self.document_type = document_type
         self.file_path = file_path
         self.verification_status = verification_status
         self.created_by = created_by
@@ -68,6 +70,7 @@ class UserDocumentDTO(ToCamel):
     def to_dto(user_doc: UserDocument) -> "UserDocumentDTO":
         return UserDocumentDTO(
             id=user_doc.id,
+            document_type=user_doc.document_type.name,
             user_id=user_doc.user_id,
             document_type_id=user_doc.document_type_id,
             file_path=user_doc.file_path,

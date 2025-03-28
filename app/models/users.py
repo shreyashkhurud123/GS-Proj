@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import String, Enum as SQAEnum, ForeignKey, Integer
+from sqlalchemy import String, Enum as SQAEnum, ForeignKey, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.config import Base
@@ -62,6 +62,8 @@ class User(Base, TimestampMixin):
     block: Mapped["Block"] = relationship("Block", back_populates="users")
 
     gram_panchayat: Mapped["GramPanchayat"] = relationship("GramPanchayat", back_populates="users")
+
+    documents_uploaded: Mapped[bool] = mapped_column(Boolean, nullable=True,default=False)
 
     # Storing list of OTP's for user
     # otps: Mapped[List["UserOTP"]] = relationship("UserOTP", back_populates="user")

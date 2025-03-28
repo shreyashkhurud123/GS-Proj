@@ -6,6 +6,7 @@ from app.services.dal.user_dal import UserDal
 from app.services.dal.dto.user_dto import UserDTO
 
 
+# Note for using below function as a dependency injection the router must be set to Authenticated Permissions.
 async def get_current_user(
         request: Request,
         db: Session = Depends(get_db)
@@ -15,7 +16,9 @@ async def get_current_user(
     Requires the middleware to have set request.state.user_id
     """
     # Get user_id from request state set by middleware
-    user_id = getattr(request.state, "user_id", None)
+    # user_id = getattr(request.state, "user_id", None)
+
+    user_id = request.state.user_id
 
     if not user_id:
         raise HTTPException(

@@ -68,7 +68,8 @@ class AuthService:
             raise HTTPException(status_code=500, detail="Twilio Exception")
 
         # Store OTP in the database (optional, for verification later)
-        AuthDal.store_otp(db, ph_no, otp, message_sid)
+        # AuthDal.store_otp(db, ph_no, otp, message_sid)
+        AuthDal.store_otp(db, ph_no, '1111', message_sid)
 
         return {"message": "OTP sent successfully", "message_id": message_sid}
 

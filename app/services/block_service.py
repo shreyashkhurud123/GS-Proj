@@ -11,7 +11,7 @@ from app.core.core_exceptions import NotFoundException, InvalidRequestException
 class BlockService:
     def get_block_admins(db: Session, search_term: Optional[str] = None) -> List[BlockAdminResponseSchema]:
         # Get Block Admin role
-        block_admin_role = RoleDal.get_role_by_name(db, "Block_Admin")
+        block_admin_role = RoleDal.get_role_by_name(db, "blockAdmin")
         if not block_admin_role:
             raise NotFoundException("Block Admin role not configured")
 
@@ -48,18 +48,30 @@ class BlockService:
         # Checking if block exists
         block = BlockDal.get_block_by_id(db, block_id)
 
+        print("In Update block admin service layer")
+
         if not block:
             raise NotFoundException(f"block with ID {block_id} not found")
+
+        print("Block found")
 
         # Checking if user exists
         user = UserDal.get_user_by_id(db, user_id)
         if not user or not user.is_active:
             raise NotFoundException(f"Active user with ID {user_id} not found")
 
+        print("User Found")
+
         # Checking if user belongs to provided block
         # Todo check whether we need below condition
         if user.block_id != block_id:
             raise InvalidRequestException(f"User {user_id} does not belong to {block_id}")
+
+        print("User Found")
+
+        UserDal.update_block_admin_to_gs(db=db, block_id=block_id)
+
+        print("Curr block admin updated GS")
 
         # Updating the role for user to block admin
         updated_user = UserDal.update_user(

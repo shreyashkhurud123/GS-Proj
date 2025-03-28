@@ -65,10 +65,11 @@ class ApiChecksMW(BaseHTTPMiddleware):
         print("In Middleware: ", method, path)
 
         if request.method == "OPTIONS":
+            print("Calling Options method")
             return await call_next(request)
 
         try:
-            print("")
+            print("Processing Middleware")
 
             if VxAPIPermsUtils.is_api_public(method=method, path=path):
                 return await call_next(request)

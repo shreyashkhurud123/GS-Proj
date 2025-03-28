@@ -23,7 +23,7 @@ def get_users_by_block_id(blockId: int, db: Session = Depends(get_db)):
     users = UserService.get_users_by_block_id(block_id=blockId, db=db)
     if not users:
         raise HTTPException(status_code=404, detail="No users found for this block id")
-    return {"users": [user.to_camel() for user in users]}
+    return [user.to_camel() for user in users if user.role_id == 4]
 
 
 VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getUsersByDistrictID', perm=VxAPIPermsEnum.PUBLIC)
@@ -35,4 +35,4 @@ def get_users_by_district_id(districtId: int, db: Session = Depends(get_db)):
     users = UserService.get_users_by_district_id(districtId, db)
     if not users:
         raise HTTPException(status_code=404, detail="No users found for this district id")
-    return {"users":  [user.to_camel() for user in users] }
+    return [user.to_camel() for user in users if user.role_id == 4]
