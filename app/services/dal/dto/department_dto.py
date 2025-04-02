@@ -15,6 +15,8 @@ class DepartmentDTO(ToCamel):
         updated_at: Optional[datetime],
         is_active: bool
     ):
+        self.department_id = id
+        self.department_name = name
         self.id = id
         self.name = name
         # self.created_by = created_by

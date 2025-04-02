@@ -75,3 +75,13 @@ async def get_departments(
     # department_dtos = [DepartmentDTO.from_orm(dept) for dept in departments]
 
     return [dept.to_camel() for dept in PresetService.get_departments(db=db)]
+
+
+VxAPIPermsUtils.set_perm_get(path=router.prefix + '/getYojanas', perm=VxAPIPermsEnum.PUBLIC)
+@router.get("/getYojanas"
+            # , response_model=List[GramPanchayatDTO]
+            )
+async def get_yojanas(
+        db: Session = Depends(get_db)
+):
+    return [yoj.to_camel() for yoj in PresetService.get_yojanas(db=db)]

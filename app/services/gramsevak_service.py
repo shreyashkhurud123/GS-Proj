@@ -85,14 +85,14 @@ class GramsevakService:
                 "email": user.email,
                 "block": block.block_name if block else "N/A",
                 "district": district.district_name if district else "N/A",
-                "service_id": 'temp_service_id',
-                "is_approved": user.status == "APPROVED",
+                "serviceId": 'temp_service_id',
+                "isApproved": user.status == ApprovalStatus.APPROVED,
                 "documentsUploaded": user.documents_uploaded
             })
 
         print("Here 3")
 
-        return result
+        return result[::-1]
 
     @staticmethod
     def get_gramsevak_details(db: Session, gramsevak_id: int) -> GramsevakDetailResponse:

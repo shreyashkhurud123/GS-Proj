@@ -47,7 +47,7 @@ class UserDal:
         return UserDTO.to_dto(user)
 
     @staticmethod
-    def get_user_by_mobile(mobile_number: str, db: Session) -> Optional[UserDTO]:
+    def get_user_by_mobile_or_whatsapp_number(mobile_number: str, db: Session) -> Optional[UserDTO]:
         """
             Getting UserDTO by Mobile
         """
@@ -71,6 +71,24 @@ class UserDal:
                 User.whatsapp_number.like(mobile_number)
 
             ))).first()
+
+        if user:
+            return UserDTO.to_dto(user)
+
+        return None
+
+    @staticmethod
+    def get_user_by_mobile(mobile_number: str, db: Session) -> Optional[UserDTO]:
+        """
+            Getting UserDTO by Mobile
+        """
+
+        print("In user Dal")
+
+        user = db.query(User).filter(and_(
+            User.is_active,
+            User.mobile_number.like(mobile_number),
+            )).first()
 
         if user:
             return UserDTO.to_dto(user)

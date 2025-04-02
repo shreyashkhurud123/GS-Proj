@@ -54,9 +54,11 @@ class AuthService:
 
             # Send OTP via Twilio
             if user.mobile_number == ph_no:
-                pass
-                # message_sid = send_sms(ph_no, otp)
-                message_sid = "test123"
+                message_sid = send_sms(ph_no, otp)
+                # message_sid = "test123"
+            else:
+                raise HTTPException(status_code=404, detail="Please use mobile numer and not whatsapp number for"
+                                                            " OTP validation")
 
             # Todo check whether we need to send OTP to whatsapp number also?
             # integrate whatsapp OTP also
@@ -68,15 +70,15 @@ class AuthService:
             raise HTTPException(status_code=500, detail="Twilio Exception")
 
         # Store OTP in the database (optional, for verification later)
-        # AuthDal.store_otp(db, ph_no, otp, message_sid)
-        AuthDal.store_otp(db, ph_no, '1111', message_sid)
+        AuthDal.store_otp(db, ph_no, otp, message_sid)
+        # AuthDal.store_otp(db, ph_no, '1111', message_sid)
 
         return {"message": "OTP sent successfully", "message_id": message_sid}
 
     @staticmethod
     def verify_otp(mobile_number: str, otp: str, db: Session):
 
-        user = UserDal.get_user_by_mobile(db=db, mobile_number=mobile_number)
+        user = UserDal.get_user_by_mobile_or_whatsapp_number(db=db, mobile_number=mobile_number)
 
         if not AuthDal.verify_user_otp(db=db, user_id=user.id, otp=otp):
             raise HTTPException(400, "Invalid or Expired OTP provided")
@@ -96,7 +98,7 @@ class AuthService:
 
         print("User Data: ", user_data.__dict__)
 
-        if UserDal.get_user_by_mobile(user_data.mobile_number, db):
+        if UserDal.get_user_by_mobile_or_whatsapp_number(user_data.mobile_number, db):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"User with phone number {user_data.mobile_number} Already exists"

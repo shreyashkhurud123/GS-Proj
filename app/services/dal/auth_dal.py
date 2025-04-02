@@ -19,7 +19,7 @@ class AuthDal:
         """
 
         # using the get user just for defensive programming strategy
-        user = UserDal.get_user_by_mobile(db=db, mobile_number=mobile_number)
+        user = UserDal.get_user_by_mobile_or_whatsapp_number(db=db, mobile_number=mobile_number)
 
         if not user:
             raise Exception("User not found for OTP storage.")

@@ -18,6 +18,12 @@ class YojanaDal:
         yojanas = db.query(Yojana).filter(Yojana.is_active).all()
         return [YojanaDTO.to_dto(y) for y in yojanas]
 
+    @staticmethod
+    def get_yojana_by_id(db: Session, yojana_id: int) -> YojanaDTO:
+        yojana = db.query(Yojana).filter(Yojana.is_active, Yojana.id == yojana_id).first()
+        return YojanaDTO.to_dto(yojana)
+
+
 class GRDal:
     @staticmethod
     def create_gr(db: Session, gr_data: dict) -> GR:

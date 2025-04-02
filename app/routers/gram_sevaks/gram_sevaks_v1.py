@@ -5,11 +5,13 @@ from sqlalchemy.orm import Session
 
 from app.config import get_db
 from app.core.core_exceptions import InvalidRequestException
+from app.dependencies.auth import get_current_user
 from app.models.enums.approval_status import ApprovalStatusRequest
 from app.models.enums.vx_api_perms_enum import VxAPIPermsEnum
 from app.schemas.gramsevak_schema import (
     ChangeStatusRequest
 )
+from app.services.dal.dto.user_dto import UserDTO
 from app.services.gramsevak_service import GramsevakService
 from app.utils.vx_api_perms_utils import VxAPIPermsUtils
 
@@ -60,10 +62,11 @@ async def change_gramsevak_status(
     )
 
 
-VxAPIPermsUtils.set_perm_post(path=router.prefix + "/docUpload", perm=VxAPIPermsEnum.PUBLIC)
+VxAPIPermsUtils.set_perm_post(path=router.prefix + "/docUpload", perm=VxAPIPermsEnum.AUTHENTICATED)
 @router.post("/docUpload", status_code=status.HTTP_201_CREATED)
 async def upload_gramsevak_documents(
     request: Request,
+    requesting_user: UserDTO = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -94,7 +97,7 @@ async def upload_gramsevak_documents(
 
     await GramsevakService.upload_gs_docs(
         db=db,
-        gramsevak_id=11,
+        gramsevak_id=requesting_user.user_id,
         documents=document_map
     )
 

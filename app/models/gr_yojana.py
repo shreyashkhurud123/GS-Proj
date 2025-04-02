@@ -25,6 +25,7 @@ class GR(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     gr_number: Mapped[str] = mapped_column(String(50), unique=True)
     gr_code: Mapped[Optional[str]] = mapped_column(String(50), unique=True)
+    subject: Mapped[Optional[str]] = mapped_column(String(50), nullable=False)
     department_id: Mapped[int] = mapped_column(ForeignKey('departments.id'), index=True)
     effective_date: Mapped[date] = mapped_column(Date, index=True)
     yojana_id: Mapped[int] = mapped_column(ForeignKey('yojanas.id'))
