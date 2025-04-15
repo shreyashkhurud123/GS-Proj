@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     # Common Utils vars
     otp_expiry_time: int = 5
 
+    aws_s3_bucket: str = "egramdisha-files"
+
     # UPLOAD_FOLDER: str = "upload/"
     # ALLOWED_EXTENSIONS: set = {"pdf", "jpg", "jpeg", "png"}
 
