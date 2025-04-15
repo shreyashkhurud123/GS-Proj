@@ -5,14 +5,22 @@ from pathlib import Path
 from fastapi import UploadFile, HTTPException, status
 from sqlalchemy.orm import Session
 import aiofiles
+import aioboto3
+import boto3
 
+from app.config import settings
 from app.schemas.government_docs_schema import BookUploadSchema, GRUploadSchema
 from app.services.dal.department_dal import DepartmentDal
 from app.services.dal.government_docs_dal import GovernmentDocsDal
 from app.services.dal.gr_dal import YojanaDal
 
 
+s3_client = boto3.client("s3")
+bucket_name = settings.aws_s3_bucket
+
+
 class GovernmentDocsService:
+
     @staticmethod
     async def upload_book(
             db: Session,
@@ -112,31 +120,58 @@ class GovernmentDocsService:
             # "effectiveDate": gr.effective_date
         }
 
+    # @staticmethod
+    # async def _save_file(file: UploadFile, category: str, department_id: int, original_name: str) -> str:
+    #     try:
+    #         # Create directory structure
+    #         base_dir = Path("static") / "government_docs" / category / f"dept_{department_id}"
+    #         base_dir.mkdir(parents=True, exist_ok=True)
+    #
+    #         # Generate unique filename
+    #         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #         # file_ext = Path(original_name).suffix
+    #         # unique_id = uuid.uuid4().hex[:6]
+    #         new_filename = f"{timestamp}_{original_name}"
+    #         file_path = base_dir / new_filename
+    #
+    #         # Save file
+    #         async with aiofiles.open(file_path, "wb") as buffer:
+    #             content = await file.read()
+    #             await buffer.write(content)
+    #
+    #         return str(file_path.relative_to("static"))
+    #
+    #     except Exception as e:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             detail=f"Failed to save file: {str(e)}"
+    #         )
+
     @staticmethod
     async def _save_file(file: UploadFile, category: str, department_id: int, original_name: str) -> str:
         try:
-            # Create directory structure
-            base_dir = Path("static") / "government_docs" / category / f"dept_{department_id}"
-            base_dir.mkdir(parents=True, exist_ok=True)
-
-            # Generate unique filename
+            # Generate S3 path like: government_docs/<category>/dept_<id>/filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            # file_ext = Path(original_name).suffix
-            # unique_id = uuid.uuid4().hex[:6]
             new_filename = f"{timestamp}_{original_name}"
-            file_path = base_dir / new_filename
+            s3_key = f"government_docs/{category}/dept_{department_id}/{new_filename}"
 
-            # Save file
-            async with aiofiles.open(file_path, "wb") as buffer:
-                content = await file.read()
-                await buffer.write(content)
+            # Read file content
+            file_content = await file.read()
 
-            return str(file_path.relative_to("static"))
+            # Upload to S3
+            s3_client.put_object(
+                Bucket=bucket_name,
+                Key=s3_key,
+                Body=file_content
+            )
+
+            # Return the relative path (without 'static')
+            return s3_key
 
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to save file: {str(e)}"
+                detail=f"Failed to upload file to S3: {str(e)}"
             )
 
     @staticmethod

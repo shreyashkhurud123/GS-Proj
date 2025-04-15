@@ -1,15 +1,15 @@
 import base64
 import logging
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import List, Optional
 
-import aiofiles
-from fastapi import HTTPException
-from fastapi import UploadFile
+from botocore.exceptions import ClientError
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+import boto3
+
+from app.config import settings
 from app.core.core_exceptions import NotFoundException, InvalidRequestException
 from app.models.enums.approval_status import ApprovalStatus, ApprovalStatusRequest
 from app.schemas.gramsevak_schema import GramsevakListItem, GramsevakDetailResponse
@@ -19,24 +19,48 @@ from app.services.dal.user_dal import UserDal
 from app.services.dal.user_hierarchy_dal import DistrictDal, BlockDal, GramPanchayatDal
 
 
+s3_client = boto3.client("s3")
+bucket_name = settings.aws_s3_bucket
+
+
 class GramsevakService:
 
-    @staticmethod
-    def read_document_content(file_path: str) -> str:
-        # Check if the file exists first
-        print(os.getcwd())
-        if not os.path.exists(file_path):
-            logging.error(f"File not found: {file_path}")
-            return None
+    # @staticmethod
+    # def read_document_content(file_path: str) -> str:
+    #     # Check if the file exists first
+    #     print(os.getcwd())
+    #     if not os.path.exists(file_path):
+    #         logging.error(f"File not found: {file_path}")
+    #         return None
+    #
+    #     try:
+    #         print("File Reading: ")
+    #         with open(file_path, "rb") as file:
+    #             file_bytes = file.read()
+    #         # Encode the file bytes to a Base64 string
+    #         return base64.b64encode(file_bytes).decode("utf-8")
+    #     except Exception as e:
+    #         logging.error(f"Error reading file {file_path}: {str(e)}")
+    #         return None
 
+    @staticmethod
+    def read_document_content(s3_key: str) -> str:
+        """
+        Read document content from S3 and return it as a Base64-encoded string.
+        """
         try:
-            print("File Reading: ")
-            with open(file_path, "rb") as file:
-                file_bytes = file.read()
-            # Encode the file bytes to a Base64 string
-            return base64.b64encode(file_bytes).decode("utf-8")
+            # Fetch the file from S3
+            response = s3_client.get_object(Bucket=bucket_name, Key=s3_key)
+            file_content = response['Body'].read()
+
+            # Encode the file content to Base64
+            return base64.b64encode(file_content).decode("utf-8")
+
+        except ClientError as e:
+            logging.error(f"Error reading file from S3 {s3_key}: {str(e)}")
+            return None
         except Exception as e:
-            logging.error(f"Error reading file {file_path}: {str(e)}")
+            logging.error(f"Unexpected error reading file from S3 {s3_key}: {str(e)}")
             return None
 
     @staticmethod
@@ -67,16 +91,6 @@ class GramsevakService:
         for user in users:
             district = DistrictDal.get_district_by_id(db, user.district_id)
             block = BlockDal.get_block_by_id(db, user.block_id)
-            # {
-            #     id: "2",
-            #     firstName: "Jane",
-            #     lastName: "Smith",
-            #     email: "jane@example.com",
-            #     block: "Block B",
-            #     district: "District 2",
-            #     serviceId: "GS002",
-            #     isApproved: false,
-            # },
 
             result.append({
                 "id": user.id,
@@ -96,28 +110,17 @@ class GramsevakService:
 
     @staticmethod
     def get_gramsevak_details(db: Session, gramsevak_id: int) -> GramsevakDetailResponse:
-
         user = UserDal.get_user_with_details_by_id(db, gramsevak_id)
-
-        print("here 1 ")
 
         if not user or not user.role_id:
             raise InvalidRequestException("User Role not found")
 
-        print("here 2 ")
-
-        print(RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id)
-
         if RoleDal.get_role_by_name(db=db, name="gramSevak").id != user.role_id:
             raise InvalidRequestException("User is not assigned as Gram Sevak")
-
-        print("here 3 ")
 
         district = DistrictDal.get_district_by_id(db=db, district_id=user.district_id)
         block = BlockDal.get_block_by_id(db=db, block_id=user.block_id)
         gram_panchayat = GramPanchayatDal.get_gram_panchayat_by_id(db=db, gp_id=user.gram_panchayat_id)
-
-        print("here 4 ")
 
         documents = UserDocumentDal.get_user_documents(db, user.id)
 
@@ -127,41 +130,12 @@ class GramsevakService:
             {
                 "documentTypeId": doc.document_type_id,
                 "documentType": doc.document_type,
-                # "document_name": doc.document_type.name,
-                "document": GramsevakService.read_document_content(os.path.join(
-                    os.getcwd(), 'static', 'upload', doc.file_path)),
+                "document": GramsevakService.read_document_content(doc.file_path),  # Now reads from S3
                 "verification_status": doc.verification_status
             } for doc in documents
         ]
 
         return user_data
-
-        return {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "designation_name": user.designation.name,
-
-            "district": {
-                "district_id": district.district_id,
-                "district_name": district.district_name
-            },
-            "block": {
-                "block_id": block.block_id,
-                "block_name": block.block_name
-            },
-            "gram_panchayat": {
-                "gram_panchayat_id": gram_panchayat.gram_panchayat_id,
-                "gram_panchayat_name": gram_panchayat.gram_panchayat_name
-            },
-            "mobile_number": user.mobile_number,
-            "whatsapp_number": user.whatsapp_number,
-            "email": user.email
-            # "documents": [{
-            #     "document_type": doc.document_type.name,
-            #     "document_name": doc.document_type.name,
-            #     "document_path": doc.file_path
-            # } for doc in documents]
-        }
 
     @staticmethod
     def update_gramsevak_status(
@@ -199,8 +173,6 @@ class GramsevakService:
         if not user:
             raise NotFoundException("Requesting User not Found")
 
-        print("Documents: ", documents)
-
         uploaded_docs = []
         for doc_id, file in documents.items():
             try:
@@ -212,7 +184,7 @@ class GramsevakService:
                     db=db,
                     user_id=gramsevak_id,
                     document_type_id=doc_id,
-                    file_path=file_path
+                    file_path=file_path  # Now stores S3 key
                 )
                 uploaded_docs.append(user_doc)
 
@@ -226,26 +198,56 @@ class GramsevakService:
 
         return {"message": "Documents uploaded successfully"}
 
+    # @staticmethod
+    # async def save_file_to_storage(file: UploadFile, user_id: int, document_type_id: int,
+    #                                static_folder: str = "static/upload") -> str:
+    #     try:
+    #         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    #         user_folder = f"user_{user_id}"
+    #         doc_type_folder = f"doc_type_{document_type_id}"
+    #
+    #         upload_path = Path(static_folder) / user_folder / doc_type_folder
+    #         upload_path.mkdir(parents=True, exist_ok=True)
+    #
+    #         file_extension = Path(file.filename).suffix
+    #         new_filename = f"{timestamp}_{Path(file.filename).stem}{file_extension}"
+    #         file_path = upload_path / new_filename
+    #
+    #         async with aiofiles.open(file_path, "wb") as buffer:
+    #             while chunk := await file.read(1024):  # Read in chunks
+    #                 await buffer.write(chunk)
+    #
+    #         return str(file_path.relative_to(static_folder))
+    #
+    #     except Exception as e:
+    #         raise RuntimeError(f"File save failed: {str(e)}")
+
     @staticmethod
-    async def save_file_to_storage(file: UploadFile, user_id: int, document_type_id: int,
-                                   static_folder: str = "static/upload") -> str:
+    async def save_file_to_storage(file: UploadFile, user_id: int, document_type_id: int) -> str:
+        """
+        Save file to S3 and return the S3 key.
+        """
         try:
+            # Generate S3 path like: user_docs/user_<id>/doc_type_<id>/filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            user_folder = f"user_{user_id}"
-            doc_type_folder = f"doc_type_{document_type_id}"
+            new_filename = f"{timestamp}_{file.filename}"
+            s3_key = f"user_docs/user_{user_id}/doc_type_{document_type_id}/{new_filename}"
 
-            upload_path = Path(static_folder) / user_folder / doc_type_folder
-            upload_path.mkdir(parents=True, exist_ok=True)
+            # Read file content
+            file_content = await file.read()
 
-            file_extension = Path(file.filename).suffix
-            new_filename = f"{timestamp}_{Path(file.filename).stem}{file_extension}"
-            file_path = upload_path / new_filename
+            # Upload to S3
+            s3_client.put_object(
+                Bucket=bucket_name,
+                Key=s3_key,
+                Body=file_content
+            )
 
-            async with aiofiles.open(file_path, "wb") as buffer:
-                while chunk := await file.read(1024):  # Read in chunks
-                    await buffer.write(chunk)
-
-            return str(file_path.relative_to(static_folder))
+            # Return the S3 key (relative path)
+            return s3_key
 
         except Exception as e:
-            raise RuntimeError(f"File save failed: {str(e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to upload file to S3: {str(e)}"
+            )
